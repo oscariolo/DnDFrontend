@@ -1,4 +1,4 @@
-import { CharacterClass } from "../classmodel";
+import { CharacterClass } from "../models/classmodel";
 
 // mock classes for testing
 export const mockClasses: CharacterClass[] = [

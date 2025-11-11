@@ -1,6 +1,6 @@
 "use client";
 
-import { CharacterClass } from "@/app/lib/classmodel";
+import { CharacterClass } from "@/app/lib/models/classmodel";
 import { use, useEffect, useState } from "react";
 import Image from "next/image";
 import ClassModal from "./detailedClassPopup";

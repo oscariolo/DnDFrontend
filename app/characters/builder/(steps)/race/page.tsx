@@ -1,7 +1,9 @@
+import { getListOfRaces } from "@/app/lib/services/characterServices";
 
 
 
-export default function RacePage() {
+export default async function RacePage() {
+  const races = await getListOfRaces();
   return (
     <div className="p-8">
       <div className="max-w-4xl mx-auto">

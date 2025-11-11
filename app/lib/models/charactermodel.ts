@@ -1,5 +1,6 @@
 import { Attributes } from "./classmodel";
 
+
 interface CustomCharacter{
     name: string;
     class: string;

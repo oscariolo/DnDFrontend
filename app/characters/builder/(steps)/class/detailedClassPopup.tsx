@@ -1,4 +1,4 @@
-import { CharacterClass } from "@/app/lib/classmodel";
+import { CharacterClass } from "@/app/lib/models/classmodel";
 import Image from "next/image";
 
 interface ClassModalProps {
