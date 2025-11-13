@@ -11,3 +11,10 @@ interface CustomCharacter{
     imgsrc?: string;
     startItems?: string[];
 }
+
+export interface DescriptionContent{
+    alignment: string;
+    physicalDescription: string;
+    personalityTraits: string;
+    backstory: string;
+}

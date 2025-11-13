@@ -88,7 +88,7 @@ export default function AttributesPage() {
         </h1>
         
         {selectedClass ? (
-          <p className="text-center text-gray-700 mb-8">
+          <p className="text-lg text-center text-gray-700 mb-8">
             Atributos base de clase: <span className="font-semibold">{selectedClass.name}</span>
           </p>
         ) : (

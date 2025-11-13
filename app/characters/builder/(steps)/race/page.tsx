@@ -76,9 +76,9 @@ export default function RacePage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-amber-50 to-orange-100 p-7">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Escoge tu raza</h1>
-        <p className="text-2xl font-semibold text-gray-700 mb-6">
+      <div className="max-w-3xl mx-auto ">
+        <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">Escoge tu raza</h1>
+        <p className="text-lg font-semibold text-gray-700 mb-6 text-center">
           La raza de tu personaje guía el aspecto de tu personaje y alineación con otros personajes
         </p>
         
