@@ -72,12 +72,12 @@ export default function AttributesPage() {
   };
 
   const attributes: { key: keyof Attributes; label: string; iconUrl:string }[] = [
-    { key: "constitution", label: "Constitution", iconUrl: "/icons/fist.svg" },
-    { key: "intelligence", label: "Intelligence" , iconUrl: "/icons/brain.svg"},
-    { key: "strength", label: "Strength" , iconUrl: "/icons/weight-lifting-up.svg" },
-    { key: "dexterity", label: "Dexterity", iconUrl: "/icons/bullseye.svg" },
-    { key: "charisma", label: "Charisma", iconUrl: "/icons/duality-mask.svg" },
-    { key: "wisdom", label: "Wisdom", iconUrl: "/icons/owl.svg" },
+    { key: "constitution", label: "Robustez", iconUrl: "/icons/fist.svg" },
+    { key: "intelligence", label: "Inteligencia" , iconUrl: "/icons/brain.svg"},
+    { key: "strength", label: "Fuerza" , iconUrl: "/icons/weight-lifting-up.svg" },
+    { key: "dexterity", label: "Destreza", iconUrl: "/icons/bullseye.svg" },
+    { key: "charisma", label: "Carisma", iconUrl: "/icons/duality-mask.svg" },
+    { key: "wisdom", label: "Sabiduría", iconUrl: "/icons/owl.svg" },
   ];
 
   return (

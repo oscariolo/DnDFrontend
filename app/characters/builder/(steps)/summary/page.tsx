@@ -83,11 +83,8 @@ export default function SummaryPage() {
     <div className="p-8 min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold text-center mb-2 text-gray-800">
-          Resumen del Personaje
+          Resumen de características
         </h1>
-        <p className="text-lg mb-8 text-gray-600 text-center">
-          Revisa todos los detalles antes de finalizar
-        </p>
 
         {/* Character Name & Basic Info */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
@@ -101,10 +98,6 @@ export default function SummaryPage() {
             </button>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <span className="text-gray-600 font-semibold">Nombre:</span>
-              <p className="text-xl text-gray-800">{characterName}</p>
-            </div>
             <div>
               <span className="text-gray-600 font-semibold">Clase:</span>
               <p className="text-xl text-gray-800">{selectedClass?.name || "Sin clase"}</p>
