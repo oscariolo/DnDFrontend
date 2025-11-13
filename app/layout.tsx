@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { tiamatFont } from "./ui/fonts";
+import Menu from './components/Menu';
 
 
 export const metadata: Metadata = {
@@ -19,7 +20,6 @@ export default function RootLayout({
         className={`${tiamatFont.variable} antialiased`}
         style={{ backgroundColor: "#090809", minHeight: "100vh", margin: 0 }}
       >
-        {/* Header visible to everyone */}
         <header
           style={{
             display: "flex",
@@ -33,7 +33,6 @@ export default function RootLayout({
             backdropFilter: "saturate(180%) blur(6px)",
           }}
         >
-          {/* Left: Logo */}
           <a
             href="/"
             style={{
@@ -47,7 +46,6 @@ export default function RootLayout({
             }}
             aria-label="DnD Maker home"
           >
-            {/* Simple inline SVG logo */}
             <svg
               width="36"
               height="36"
@@ -72,7 +70,6 @@ export default function RootLayout({
             <span>D&amp;D Maker</span>
           </a>
 
-          {/* Right: Icons */}
           <nav aria-label="User menu" style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <button
               aria-label="Messages"
@@ -110,6 +107,7 @@ export default function RootLayout({
             </button>
           </nav>
         </header>
+        <Menu />
 
         {children}
       </body>
@@ -117,7 +115,6 @@ export default function RootLayout({
   );
 }
 
-/* Helper style injected as a JS object so no extra CSS file is required */
 const iconButtonStyle: React.CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
