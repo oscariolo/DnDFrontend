@@ -1,88 +1,110 @@
-import { CharacterClass } from "@/app/lib/classmodel";
+"use client";
 
-// mock classes for testing
-const mockClasses: CharacterClass[] = [
-  {
-    name: "Warrior",
-    description: "A fierce combatant with exceptional strength and combat prowess. Masters of weapons and armor.",
-    attributes: {
-      strength: 16,
-      dexterity: 12,
-      constitution: 14,
-      intelligence: 8,
-      wisdom: 10,
-      charisma: 10,
-    },
-  },
-  {
-    name: "Mage",
-    description: "A wielder of arcane magic with vast knowledge. Commands the elements and reality itself.",
-    attributes: {
-      strength: 8,
-      dexterity: 12,
-      constitution: 10,
-      intelligence: 16,
-      wisdom: 14,
-      charisma: 10,
-    },
-  },
-  {
-    name: "Rogue",
-    description: "A cunning and agile character skilled in stealth and precision. Expert in ambush tactics.",
-    attributes: {
-      strength: 10,
-      dexterity: 16,
-      constitution: 12,
-      intelligence: 12,
-      wisdom: 10,
-      charisma: 12,
-    },
-  },
-  {
-    name: "Cleric",
-    description: "A divine spellcaster devoted to a deity. Heals allies and smites enemies with holy power.",
-    attributes: {
-      strength: 12,
-      dexterity: 10,
-      constitution: 12,
-      intelligence: 10,
-      wisdom: 16,
-      charisma: 12,
-    },
-  },
-  {
-    name: "Ranger",
-    description: "A skilled hunter and tracker, master of ranged combat and nature magic.",
-    attributes: {
-      strength: 12,
-      dexterity: 14,
-      constitution: 12,
-      intelligence: 10,
-      wisdom: 14,
-      charisma: 10,
-    },
-  },
-  {
-    name: "Paladin",
-    description: "A holy warrior bound by sacred oaths. Combines martial prowess with divine magic.",
-    attributes: {
-      strength: 14,
-      dexterity: 10,
-      constitution: 14,
-      intelligence: 10,
-      wisdom: 12,
-      charisma: 14,
-    },
-  },
-];
+import { CharacterClass } from "@/app/lib/models/classmodel";
+import { use, useEffect, useState } from "react";
+import Image from "next/image";
+import ClassModal from "./detailedClassPopup";
+import { ChevronRight } from "lucide-react";
+import { mockClasses } from "@/app/lib/consts/mockClasses";
+import { useRouter } from "next/navigation";
 
+interface ClassCardProps {
+  characterClass: CharacterClass;
+  imgsrc?: string;
+  onClick: () => void;
+}
+
+function ClassCard({ characterClass, imgsrc, onClick }: ClassCardProps) {
+  return (
+    <div 
+      onClick={onClick}
+      className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center p-4 gap-4"
+    >
+      <div className="relative h-12 w-12 shrink-0 bg-linear-to-b from-amber-200 to-orange-300 rounded-lg">
+        <Image
+          src={imgsrc || "/images/placeholdercharacter.png"}
+          alt={characterClass.name}
+          fill
+          className="object-cover rounded-lg"
+        />
+      </div>
+      <div>
+        <h3 className="font-bold text-lg text-gray-800">{characterClass.name}</h3>
+      </div>
+      <div className="ml-auto">
+        <ChevronRight color="#4b8ed7" strokeWidth={3} size={30} />
+      </div>
+    </div>
+  );
+}
 
 export default function CharacterBuilderClassPage() {
+  const [detailClass, setDetailClass] = useState<CharacterClass | null>(null);
+  const [selectedClass, setSelectedClass] = useState<CharacterClass | null>(null);
+  const [showClassList, setShowClassList] = useState(true);
+  const router= useRouter();
+
+  useEffect(() => {
+    const savedClassLocal = localStorage.getItem('selectedClass');
+    if (savedClassLocal) {
+      const parsedClass: CharacterClass = JSON.parse(savedClassLocal);
+      setSelectedClass(parsedClass);
+      setShowClassList(false);
+    }
+  }, []);
+
   return (
-    <div className="min-h-screen flex bg-linear-to-br from-amber-50 to-orange-100 p-7">
-      <div className="text-2xl">
-        Escoge tu clase
-      </div>      
+    <div className="min-h-screen bg-linear-to-br from-amber-50 to-orange-100 p-7">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-800 mb-8">Escoge tu clase</h1>
+        <h1 className="text-2xl font-semibold text-gray-700 mb-6">Según tu clase tendrás atributos base con los cuales tendras mas proficiencia al inicio de la campaña</h1>
+
+        
+        {showClassList &&(
+          <div className="flex flex-col gap-4">
+            {mockClasses.map((characterClass, index) => (
+              <ClassCard
+                key={index}
+                characterClass={characterClass}
+                onClick={() => setDetailClass(characterClass)}
+              />
+            ))}
+          </div>
+        )
+        }
+        
+        {!showClassList && selectedClass && (
+          <ClassModal
+            characterClass={selectedClass}
+            onClose={() => {setShowClassList(true);}}
+            onClassSelected={()=>{
+              router.push('/characters/builder/race');
+            }}
+            onChangeClass={()=>{
+              setSelectedClass(null);
+              setShowClassList(true);
+              localStorage.removeItem('selectedClass');
+            
+            }}
+            isInline={true}
+          ></ClassModal>
+        )
+        }
+        
+        {detailClass  &&  (
+          <ClassModal
+            characterClass={detailClass}
+            onClose={() => setDetailClass(null)}
+            onClassSelected={()=>{
+              // Selecciona la clase y cierra el modal
+              setSelectedClass(detailClass);
+              setShowClassList(false);
+              localStorage.setItem('selectedClass', JSON.stringify(detailClass));
+              router.push('/characters/builder/race');
+            }}
+          />
+        )}  
+      </div>
     </div>
   );
 }
