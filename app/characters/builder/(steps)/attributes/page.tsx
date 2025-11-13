@@ -116,9 +116,9 @@ export default function AttributesPage() {
               return (
                 <div
                   key={key}
-                  className="flex items-center justify-between p-4 bg-gray-300 rounded-lg shadow-md"
+                  className="flex flex-col sm:flex-row items-center sm:justify-between p-4 bg-gray-300 rounded-lg shadow-md"
                 >
-                  <div className="flex items-center gap-4 flex-1">
+                  <div className="flex items-center gap-4 mb-3 sm:mb-0 w-full sm:w-auto justify-center sm:justify-start sm:flex-1">
                     <div className="w-12 h-12 relative shrink-0">
                       <Image
                         src={iconUrl}
@@ -127,7 +127,7 @@ export default function AttributesPage() {
                         className="object-contain"
                       />
                     </div>
-                    <div>
+                    <div className="text-center sm:text-left">
                       <h3 className="text-lg font-semibold text-gray-900">
                         {label}
                       </h3>
