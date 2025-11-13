@@ -18,12 +18,27 @@ interface queryResponse {
   description: string;
 }
 
+export interface RaceResponse {
+  name: string;
+  size_description: string;
+  alignment?: string;
+  age?: string;
+  traits?: {name:string; desc:string}[];
+
+}
+
 // GraphQL query for races
 const GET_RACES = gql`
   query Races {
     races {
       name
+      alignment
+      age
       size_description
+      traits{
+        name
+        desc
+      }
     }
   }
 `;
@@ -50,18 +65,42 @@ const GET_TOOLS = gql`query Features {
 
 export async function getListOfRaces(): Promise<queryResponse[]> {
   try {
-    const { data } = await client.query<{races:{name:string; size_description:string}[]}>({
+    const { data } = await client.query<{
+      races: {
+        name: string;
+        size_description: string;
+        alignment?: string;
+        age?: string;
+        traits?: { name: string; desc: string }[];
+      }[];
+    }>({
       query: GET_RACES,
     });
-    if(!data || !data.races) {
-        return [];
+    if (!data || !data.races) {
+      return [];
     }
     const parsedData: queryResponse[] = data.races.map((race) => ({
-      name:race.name,
+      name: race.name,
       description: race.size_description,
-      
     }));
     return parsedData;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to fetch races");
+  }
+}
+
+export async function getFullRaceData(): Promise<RaceResponse[]> {
+  try {
+    const { data } = await client.query<{
+      races: RaceResponse[];
+    }>({
+      query: GET_RACES,
+    });
+    if (!data || !data.races) {
+      return [];
+    }
+    return data.races;
   } catch (error) {
     console.error(error);
     throw new Error("Failed to fetch races");
