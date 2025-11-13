@@ -7,6 +7,7 @@ const builderSteps = [
   { index: 3, title: "Habilidades", route: "/characters/builder/attributes" },
   { index: 4, title: "Detalles", route: "/characters/builder/details" },
   { index: 5, title: "Equipamiento", route: "/characters/builder/baseitems" },
+  { index: 6, title: "Resumen", route: "/characters/builder/summary" },
 ];
 
 export default function BuilderLayout({
@@ -15,7 +16,7 @@ export default function BuilderLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-linear-to-br from-amber-50 to-orange-100 ">
+    <div className="min-h-screen ">
       <SwipeableTab items={builderSteps} />
       {/*Componente para editar nombre, se comparte en las demas pantallas*/}
       <div className="max-w-2xl mx-auto mt-6 mb-4 px-4">

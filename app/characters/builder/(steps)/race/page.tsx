@@ -75,7 +75,7 @@ export default function RacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-amber-50 to-orange-100 p-7">
+    <div className="min-h-screen">
       <div className="max-w-3xl mx-auto ">
         <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">Escoge tu raza</h1>
         <p className="text-lg font-semibold text-gray-700 mb-6 text-center">

@@ -1,7 +1,7 @@
 import { Attributes } from "./classmodel";
 
 
-interface CustomCharacter{
+export interface CustomCharacter{
     name: string;
     class: string;
     currentAttributes: Attributes;
