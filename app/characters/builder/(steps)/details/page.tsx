@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { DescriptionContent } from '@/app/lib/models/charactermodel';
+import { DescriptionContent, CustomCharacter } from '@/app/lib/models/charactermodel';
 
 const ALIGNMENT_LIST = [
   {item:"Cáotico Malvado", description:"Tiende a actuar según sus propios deseos y caprichos, sin importar las reglas o leyes. Busca su propio beneficio a expensas de los demás."},
@@ -26,10 +26,13 @@ export default function DetailsPage() {
   });
 
   useEffect(() => {
-    // Load saved data from localStorage
-    const savedData = localStorage.getItem('characterDescription');
-    if (savedData) {
-      setFormData(JSON.parse(savedData));
+    // Load saved data from customCharacter
+    const savedCharacter = localStorage.getItem('customCharacter');
+    if (savedCharacter) {
+      const character: CustomCharacter = JSON.parse(savedCharacter);
+      if (character.description) {
+        setFormData(character.description);
+      }
     }
   }, []);
 
@@ -37,14 +40,44 @@ export default function DetailsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('characterDescription', JSON.stringify(formData));
+    
+    const savedCharacter = localStorage.getItem('customCharacter');
+    const character: CustomCharacter = savedCharacter
+      ? JSON.parse(savedCharacter)
+      : {
+          name: "",
+          class: "",
+          currentAttributes: { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 },
+          race: "",
+          description: { alignment: "", physicalDescription: "", personalityTraits: "", backstory: "" },
+          skills: [],
+          startItems: [],
+        };
+    
+    character.description = formData;
+    localStorage.setItem('customCharacter', JSON.stringify(character));
     router.push('/characters/builder/baseitems');
   };
 
   const handleChange = (field: keyof DescriptionContent, value: string) => {
     const updatedData = { ...formData, [field]: value };
     setFormData(updatedData);
-    localStorage.setItem('characterDescription', JSON.stringify(updatedData));
+    
+    const savedCharacter = localStorage.getItem('customCharacter');
+    const character: CustomCharacter = savedCharacter
+      ? JSON.parse(savedCharacter)
+      : {
+          name: "",
+          class: "",
+          currentAttributes: { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 },
+          race: "",
+          description: { alignment: "", physicalDescription: "", personalityTraits: "", backstory: "" },
+          skills: [],
+          startItems: [],
+        };
+    
+    character.description = updatedData;
+    localStorage.setItem('customCharacter', JSON.stringify(character));
   };
 
   return (

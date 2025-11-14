@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getListOfSkills, getListOfTools } from "@/app/lib/services/characterServices";
-import { StarterItem } from "@/app/lib/models/charactermodel";
+import { StarterItem, CustomCharacter } from "@/app/lib/models/charactermodel";
 
 
 export default function BaseItemsPage() {
@@ -24,11 +24,17 @@ export default function BaseItemsPage() {
         setTools(toolsData);
         setSkills(skillsData);
 
-        // Load saved selections from localStorage
-        const savedTools = localStorage.getItem('selectedTools');
-        const savedSkills = localStorage.getItem('selectedSkills');
-        if (savedTools) setSelectedTools(JSON.parse(savedTools));
-        if (savedSkills) setSelectedSkills(JSON.parse(savedSkills));
+        // Load saved selections from customCharacter
+        const savedCharacter = localStorage.getItem('customCharacter');
+        if (savedCharacter) {
+          const character: CustomCharacter = JSON.parse(savedCharacter);
+          if (character.startItems) {
+            setSelectedTools(character.startItems.map(item => item.name));
+          }
+          if (character.skills) {
+            setSelectedSkills(character.skills.map(skill => skill.name));
+          }
+        }
       } catch (error) {
         console.error('Failed to fetch data:', error);
       } finally {
@@ -48,7 +54,7 @@ export default function BaseItemsPage() {
       } else {
         return prev;
       }
-      localStorage.setItem('selectedTools', JSON.stringify(updated));
+      saveToCharacter(updated, selectedSkills);
       return updated;
     });
   };
@@ -63,9 +69,38 @@ export default function BaseItemsPage() {
       } else {
         return prev;
       }
-      localStorage.setItem('selectedSkills', JSON.stringify(updated));
+      saveToCharacter(selectedTools, updated);
       return updated;
     });
+  };
+
+  const saveToCharacter = (toolNames: string[], skillNames: string[]) => {
+    const savedCharacter = localStorage.getItem('customCharacter');
+    const character: CustomCharacter = savedCharacter
+      ? JSON.parse(savedCharacter)
+      : {
+          name: "",
+          class: "",
+          currentAttributes: { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 },
+          race: "",
+          description: { alignment: "", physicalDescription: "", personalityTraits: "", backstory: "" },
+          skills: [],
+          startItems: [],
+        };
+
+    // Convert tool names to StarterItem objects
+    character.startItems = toolNames.map(name => {
+      const tool = tools.find(t => t.name === name);
+      return tool || { name, description: "" };
+    });
+
+    // Convert skill names to StarterItem objects
+    character.skills = skillNames.map(name => {
+      const skill = skills.find(s => s.name === name);
+      return skill || { name, description: "" };
+    });
+
+    localStorage.setItem('customCharacter', JSON.stringify(character));
   };
 
   const handleContinue = () => {

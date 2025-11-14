@@ -1,12 +1,14 @@
 "use client";
 
-import { CharacterClass } from "@/app/lib/models/classmodel";
+
 import { use, useEffect, useState } from "react";
 import Image from "next/image";
 import ClassModal from "../../../../shared/components/detailedClassPopup";
 import { ChevronRight } from "lucide-react";
 import { mockClasses } from "@/app/lib/consts/mockClasses";
 import { useRouter } from "next/navigation";
+import { CustomCharacter } from "@/app/lib/models/charactermodel";
+import { CharacterClass } from "@/app/lib/models/classmodel";
 
 interface ClassCardProps {
   characterClass: CharacterClass;
@@ -45,13 +47,36 @@ export default function CharacterBuilderClassPage() {
   const router= useRouter();
 
   useEffect(() => {
-    const savedClassLocal = localStorage.getItem('selectedClass');
-    if (savedClassLocal) {
-      const parsedClass: CharacterClass = JSON.parse(savedClassLocal);
-      setSelectedClass(parsedClass);
-      setShowClassList(false);
+    const savedCharacter = localStorage.getItem('customCharacter');
+    if (savedCharacter) {
+      const parsedCustomCharacter: CustomCharacter = JSON.parse(savedCharacter);
+      if (parsedCustomCharacter.class) {
+        const characterDetails = mockClasses.find(c => c.name === parsedCustomCharacter.class);
+        setSelectedClass(characterDetails || null);
+        setShowClassList(false);
+      }
     }
   }, []);
+
+  const saveChosenClass = (characterClass: CharacterClass) => {
+    const savedCharacter = localStorage.getItem('customCharacter');
+    const character: CustomCharacter = savedCharacter 
+      ? JSON.parse(savedCharacter)
+      : {
+          name: "",
+          class: "",
+          currentAttributes: { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 },
+          race: "",
+          description: { alignment: "", physicalDescription: "", personalityTraits: "", backstory: "" },
+          skills: [],
+          startItems: [],
+        };
+    
+    character.class = characterClass.name;
+    // Initialize base attributes from class
+    character.currentAttributes = { ...characterClass.attributes };
+    localStorage.setItem('customCharacter', JSON.stringify(character));
+  };
 
   return (
     <div className="min-h-screen">
@@ -83,7 +108,7 @@ export default function CharacterBuilderClassPage() {
             onChangeClass={()=>{
               setSelectedClass(null);
               setShowClassList(true);
-              localStorage.removeItem('selectedClass');
+              saveChosenClass(selectedClass);
             
             }}
             isInline={true}
@@ -99,7 +124,7 @@ export default function CharacterBuilderClassPage() {
               // Selecciona la clase y cierra el modal
               setSelectedClass(detailClass);
               setShowClassList(false);
-              localStorage.setItem('selectedClass', JSON.stringify(detailClass));
+              saveChosenClass(detailClass);
               router.push('/characters/builder/race');
             }}
           />
