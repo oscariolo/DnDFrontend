@@ -32,3 +32,35 @@ body {
   font-family: var(--font-tiamat);
 }
 
+.splide-slide-img {
+  transition: all 0.6s ease-in-out !important;
+  will-change: transform, opacity;
+}
+
+.active-scale {
+  width: 26rem !important;
+  height: 32rem !important;
+  opacity: 0.5 !important;
+  transform: scale(1) !important;
+}
+
+.inactive-scale {
+  width: 14rem !important;
+  height: 18rem !important;
+  opacity: 0.2 !important;
+  transform: scale(0.9) !important;
+}
+
+.splide__slide.is-active .splide-slide-img {
+  width: 26rem !important;
+  height: 32rem !important;
+  opacity: 0.5;
+  transform: scale(1);
+}
+
+.splide__slide:not(.is-active) .splide-slide-img {
+  width: 14rem !important;
+  height: 18rem !important;
+  opacity: 0.2;
+  transform: scale(0.9);
+}
