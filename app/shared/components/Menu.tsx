@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const MENU_ITEMS = [
-  { href: '/clases', label: 'clases' }, 
-  { href: '/campaign', label: 'campains' },
-  { href: '/characters', label: 'characters' },
-  { href: '/play', label: 'play' },
+  { href: '/clases', label: 'Clases' }, 
+  { href: '/campaign', label: 'Campañas' },
+  { href: '/characters', label: 'Personajes' },
+  { href: '/play', label: 'Jugar' },
 ];
 
 export default function Menu() {
