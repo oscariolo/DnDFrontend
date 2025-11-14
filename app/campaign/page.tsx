@@ -66,16 +66,16 @@ export default function CampaignPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f7f7e3] px-2 md:px-0 pb-16 overflow-x-hidden">
+    <main className="min-h-screen bg-[url('/images/background-bone.png')] px-2 md:px-0 pb-4 overflow-x-hidden">
       {/* Header */}
-      <header className="text-center mb-16 py-12">
+      <header className="text-center mb-10 py-5">
         <h1 className={`text-4xl md:text-6xl font-extrabold mb-4 ${fantasyGradientText}`}>Campañas Populares</h1>
         <p className="text-xl text-gray-400">
           Explora campañas creadas por la comunidad o crea la tuya propia.
         </p>
       </header>
       {/* Banner fuera del container */}
-      <section className="mb-20 flex justify-center">
+      <section className="mb-10 flex justify-center">
         <div className="relative w-screen h-[60vh] max-h-[80vh] flex items-center justify-center overflow-hidden shadow-xl">
           {/* Fondo tipo banner */}
           <Image
@@ -102,14 +102,14 @@ export default function CampaignPage() {
             ref={createCampRef}
             className="absolute inset-0 flex flex-col items-center justify-center z-30 px-4"
           >
-            <h2 className="text-4xl text-white mb-4 drop-shadow-2xl text-center">
+            <h2 className="text-5xl text-white mb-4 drop-shadow-2xl text-center">
               Crea tu Campaña
             </h2>
-            <p className="text-gray-200 mb-6 text-center max-w-xl">
+            <p className="text-2xl text-gray-200 mb-6 text-center max-w-xl">
               Diseña mundos épicos, tramas intrigantes y desafíos mortales. Conviértete en el Dungeon Master que guía la historia y da vida a la aventura para tus jugadores.
             </p>
             <Link href="/campaign/builder">
-              <button className="mt-auto w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              <button className="mt-auto w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
                 Empezar Nueva Campaña
               </button>
             </Link>
@@ -118,10 +118,10 @@ export default function CampaignPage() {
       </section>
 
       {/* El resto del contenido sí va dentro del container */}
-      <div className="container mx-auto px-4 py-12 max-w-7xl">
+      <div className="container mx-auto px-4 py-1 max-w-7xl">
         {/* Carrusel de campañas de la comunidad */}
-        <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-8 text-center">Campañas de la Comunidad</h2>
+        <section className="mb-10">
+          <h2 className="text-3xl font-bold mb-10 text-center">Campañas de la Comunidad</h2>
           <div className="relative">
             <div
               ref={carouselRef}
@@ -150,16 +150,6 @@ export default function CampaignPage() {
             </div>
           </div>
         </section>
-
-        {/* Botón para hacer scroll a crear campaña */}
-        <div className="text-center mt-16">
-          <button
-            className="w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
-            onClick={scrollToCreateCampaign}
-          >
-            ¡Crea tu Campaña!
-          </button>
-        </div>
       </div>
       {/* Oculta el scroll horizontal del carrusel */}
       <style>{`

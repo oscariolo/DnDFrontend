@@ -187,7 +187,7 @@ export default function CharactersPage() {
 				</header>
 
 			{/* Banner fuera del container */}
-			<section className="mb-20 flex justify-center">
+			<section className="mb-10 flex justify-center">
 				<div className="relative w-screen h-[60vh] max-h-[80vh] flex items-center justify-center overflow-hidden shadow-xl">
 					{/* Fondo tipo banner */}
 					<Image
@@ -211,11 +211,11 @@ export default function CharactersPage() {
 						<h2 className="text-4xl sm:text-5xl text-white drop-shadow-2xl text-center px-4 mb-6">
 							Crea tu Personaje
 						</h2>
-						<p className="text-gray-200 mb-6 text-center max-w-xl">
+						<p className="text-2xl text-gray-200 mb-6 text-center max-w-xl">
 							Elige tu raza, clase y trasfondo. Forja un héroe único con habilidades y una historia personal.
 						</p>
 						<Link href="/characters/builder/class">
-							<button className="mt-auto w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+							<button className="mt-auto w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
 								Crear nuevo personaje
 							</button>
 						</Link>
@@ -224,11 +224,11 @@ export default function CharactersPage() {
 			</section>
 
 			{/* El resto del contenido sí va dentro del container */}
-			<div className="container mx-auto px-4 py-12 max-w-7xl">
+			<div className="container mx-auto px-4 py-1 max-w-7xl">
 				{/* Personajes Destacados */}
 				<section className="mb-20">
 					<h2
-						className={`text-3xl font-bold mb-12 text-center ${fantasyGradientText}`}
+						className={`text-5xl font-bold mb-10 text-center ${fantasyGradientText}`}
 					>
 						Personajes Destacados
 					</h2>
@@ -296,13 +296,13 @@ export default function CharactersPage() {
                     </div>
                   </div>
                   <div
-                    className="flex flex-col md:flex-row gap-4 mt-8 w-full static mb-6 md:absolute md:bottom-3 md:right-3 md:w-auto md:mt-0 items-center md:items-end justify-center md:justify-end"
+                    className="flex flex-col md:flex-row gap-4 mt-8 items-center md:items-end justify-center md:justify-end mb-6 md:absolute md:bottom-3 md:right-3 md:w-auto md:mt-0"
                   >
-					<button onClick={()=>handleEditCharacter(char, router)} className="w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow text-center">
+					<button onClick={()=>handleEditCharacter(char, router)} className="w-[220px] md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow text-center">
 					Editar personaje
 					</button>
                     <Link href="/campaign">
-                      <button className="w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow text-center">
+                      <button className="w-[220px] md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow text-center">
                         Usar personaje
                       </button>
                     </Link>
