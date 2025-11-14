@@ -4,75 +4,43 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { CharacterClass, Attributes } from "@/app/lib/models/classmodel";
-import { CustomCharacter, DescriptionContent, RaceDetails } from "@/app/lib/models/charactermodel";
+import { CustomCharacter, DescriptionContent } from "@/app/lib/models/charactermodel";
+import { mockClasses } from "@/app/lib/consts/mockClasses";
+import { getFullRaceData } from "@/app/lib/services/characterServices";
 
 export default function SummaryPage() {
   const router = useRouter();
-  const [characterName, setCharacterName] = useState("");
-  const [selectedClass, setSelectedClass] = useState<CharacterClass | null>(null);
-  const [selectedRace, setSelectedRace] = useState<RaceDetails | null>(null);
-  const [baseAttributes, setBaseAttributes] = useState<Attributes | null>(null);
-  const [bonusAttributes, setBonusAttributes] = useState<Attributes | null>(null);
-  const [description, setDescription] = useState<DescriptionContent | null>(null);
-  const [selectedTools, setSelectedTools] = useState<string[]>([]);
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-
-  useEffect(()=>{
-    // Retrieving the class personalization as an object itself instead of retrieving individual attributes
-    const classData = localStorage.getItem("customCharacter");
-    if (classData) {
-      const parsedClass: CustomCharacter = JSON.parse(classData);
-    }
-
-  });
+  const [character, setCharacter] = useState<CustomCharacter | null>(null);
+  const [classDetails, setClassDetails] = useState<CharacterClass | null>(null);
+  const [raceName, setRaceName] = useState<string>("");
 
   useEffect(() => {
-    // Load all character data from localStorage
-    const name = localStorage.getItem("characterName") || "Sin nombre";
-    const classData = localStorage.getItem("selectedClass");
-    const raceString = localStorage.getItem("selectedRace") || null;
-    if(raceString){
-      const race:RaceDetails = JSON.parse(raceString);
-      setSelectedRace(race);
-    }
-    const bonus = localStorage.getItem("attributeBonus");
-    const desc = localStorage.getItem("characterDescription");
-    const tools = localStorage.getItem("selectedTools");
-    const skills = localStorage.getItem("selectedSkills");
-
-    setCharacterName(name);
-
-    if (classData) {
-      const parsedClass: CharacterClass = JSON.parse(classData);
-      setSelectedClass(parsedClass);
-      setBaseAttributes(parsedClass.attributes);
-    }
-
-    if (bonus) {
-      setBonusAttributes(JSON.parse(bonus));
-    }
-
-    if (desc) {
-      setDescription(JSON.parse(desc));
-    }
-
-    if (tools) {
-      setSelectedTools(JSON.parse(tools));
-    }
-
-    if (skills) {
-      setSelectedSkills(JSON.parse(skills));
+    // Load complete character from customCharacter
+    const savedCharacter = localStorage.getItem("customCharacter");
+    if (savedCharacter) {
+      const parsedCharacter: CustomCharacter = JSON.parse(savedCharacter);
+      setCharacter(parsedCharacter);
+      
+      // Find class details for attribute breakdown
+      if (parsedCharacter.class) {
+        const foundClass = mockClasses.find(c => c.name === parsedCharacter.class);
+        setClassDetails(foundClass || null);
+      }
+      
+      // Set race name
+      if (parsedCharacter.race) {
+        setRaceName(parsedCharacter.race);
+      }
     }
   }, []);
 
-  const calculateTotal = (attr: keyof Attributes): number => {
-    const base = baseAttributes?.[attr] || 0;
-    const bonus = bonusAttributes?.[attr] || 0;
-    return base + bonus;
+  const calculateBonus = (attr: keyof Attributes): number => {
+    if (!character || !classDetails) return 0;
+    return (character.currentAttributes[attr] || 0) - classDetails.attributes[attr];
   };
 
   const handleFinish = () => {
-    // TODO: Send data to backend
+    // TODO: Send character data to backend
     router.push("/characters");
   };
 
@@ -88,6 +56,14 @@ export default function SummaryPage() {
     { key: "wisdom", label: "Sabiduria", iconUrl: "/icons/owl.svg" },
     { key: "charisma", label: "Carisma", iconUrl: "/icons/duality-mask.svg" },
   ];
+
+  if (!character) {
+    return (
+      <div className="p-8 min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-2xl font-semibold text-gray-700">Cargando...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 min-h-screen bg-gray-50">
@@ -110,11 +86,11 @@ export default function SummaryPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <span className="text-gray-600 font-semibold">Clase:</span>
-              <p className="text-xl text-gray-800">{selectedClass?.name || "Sin clase"}</p>
+              <p className="text-xl text-gray-800">{character.class || "Sin clase"}</p>
             </div>
             <div>
               <span className="text-gray-600 font-semibold">Raza:</span>
-              <p className="text-xl text-gray-800">{selectedRace?.name ?? "Sin raza"}</p>
+              <p className="text-xl text-gray-800">{raceName || "Sin raza"}</p>
             </div>
           </div>
         </div>
@@ -142,10 +118,10 @@ export default function SummaryPage() {
                   </span>
                 </div>
                 <div className="text-3xl font-bold text-gray-800">
-                  {calculateTotal(key)}
+                  {character.currentAttributes[key] || 0}
                 </div>
                 <div className="text-xs text-gray-500">
-                  Base: {baseAttributes?.[key] || 0} + Bonus: {bonusAttributes?.[key] || 0}
+                  Base: {classDetails?.attributes[key] || 0} + Bonus: {calculateBonus(key)}
                 </div>
               </div>
             ))}
@@ -153,7 +129,7 @@ export default function SummaryPage() {
         </div>
 
         {/* Description */}
-        {description && (
+        {character.description && (
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-2xl font-bold text-gray-800">Descripción</h2>
@@ -167,19 +143,19 @@ export default function SummaryPage() {
             <div className="space-y-4">
               <div>
                 <span className="text-gray-600 font-semibold">Alineación:</span>
-                <p className="text-gray-800">{description.alignment}</p>
+                <p className="text-gray-800">{character.description.alignment}</p>
               </div>
               <div>
                 <span className="text-gray-600 font-semibold">Descripción Física:</span>
-                <p className="text-gray-800">{description.physicalDescription}</p>
+                <p className="text-gray-800">{character.description.physicalDescription}</p>
               </div>
               <div>
                 <span className="text-gray-600 font-semibold">Rasgos de Personalidad:</span>
-                <p className="text-gray-800">{description.personalityTraits}</p>
+                <p className="text-gray-800">{character.description.personalityTraits}</p>
               </div>
               <div>
                 <span className="text-gray-600 font-semibold">Historia:</span>
-                <p className="text-gray-800">{description.backstory}</p>
+                <p className="text-gray-800">{character.description.backstory}</p>
               </div>
             </div>
           </div>
@@ -197,12 +173,12 @@ export default function SummaryPage() {
                 Editar
               </button>
             </div>
-            {selectedTools.length > 0 ? (
+            {character.startItems && character.startItems.length > 0 ? (
               <ul className="space-y-2">
-                {selectedTools.map((tool, index) => (
+                {character.startItems.map((tool, index) => (
                   <li key={index} className="flex items-center gap-2 text-gray-800">
                     <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
-                    {tool}
+                    {tool.name}
                   </li>
                 ))}
               </ul>
@@ -221,12 +197,12 @@ export default function SummaryPage() {
                 Editar
               </button>
             </div>
-            {selectedSkills.length > 0 ? (
+            {character.skills && character.skills.length > 0 ? (
               <ul className="space-y-2">
-                {selectedSkills.map((skill, index) => (
+                {character.skills.map((skill, index) => (
                   <li key={index} className="flex items-center gap-2 text-gray-800">
                     <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
-                    {skill}
+                    {skill.name}
                   </li>
                 ))}
               </ul>

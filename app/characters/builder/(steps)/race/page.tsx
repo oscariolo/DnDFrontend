@@ -6,7 +6,7 @@ import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import RaceModal from "./detailedRacePopup";
-import { RaceDetails } from "@/app/lib/models/charactermodel";
+import { RaceDetails, CustomCharacter } from "@/app/lib/models/charactermodel";
 
 interface RaceCardProps {
   race: RaceDetails;
@@ -51,12 +51,17 @@ export default function RacePage() {
         const data = await getFullRaceData();
         setRaces(data);
         
-        // Check if race was already selected
-        const savedRaceLocal = localStorage.getItem('selectedRace');
-        if (savedRaceLocal) {
-          const parsedRace: RaceDetails = JSON.parse(savedRaceLocal);
-          setSelectedRace(parsedRace);
-          setShowRaceList(false);
+        // Check if race was already selected in customCharacter
+        const savedCharacter = localStorage.getItem('customCharacter');
+        if (savedCharacter) {
+          const character: CustomCharacter = JSON.parse(savedCharacter);
+          if (character.race) {
+            const parsedRace = data.find(r => r.name === character.race);
+            if (parsedRace) {
+              setSelectedRace(parsedRace);
+              setShowRaceList(false);
+            }
+          }
         }
       } catch (error) {
         console.error("Failed to load races:", error);
@@ -105,7 +110,12 @@ export default function RacePage() {
             onChangeRace={() => {
               setSelectedRace(null);
               setShowRaceList(true);
-              localStorage.removeItem('selectedRace');
+              const savedCharacter = localStorage.getItem('customCharacter');
+              if (savedCharacter) {
+                const character: CustomCharacter = JSON.parse(savedCharacter);
+                character.race = "";
+                localStorage.setItem('customCharacter', JSON.stringify(character));
+              }
             }}
             isInline={true}
           />
@@ -118,7 +128,20 @@ export default function RacePage() {
             onRaceSelected={() => {
               setSelectedRace(detailRace);
               setShowRaceList(false);
-              localStorage.setItem('selectedRace', JSON.stringify(detailRace));
+              const savedCharacter = localStorage.getItem('customCharacter');
+              const character: CustomCharacter = savedCharacter
+                ? JSON.parse(savedCharacter)
+                : {
+                    name: "",
+                    class: "",
+                    currentAttributes: { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 },
+                    race: "",
+                    description: { alignment: "", physicalDescription: "", personalityTraits: "", backstory: "" },
+                    skills: [],
+                    startItems: [],
+                  };
+              character.race = detailRace.name;
+              localStorage.setItem('customCharacter', JSON.stringify(character));
               router.push('/characters/builder/attributes');
             }}
           />

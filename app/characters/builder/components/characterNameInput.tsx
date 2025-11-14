@@ -2,22 +2,40 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { CustomCharacter } from "@/app/lib/models/charactermodel";
 
 export default function CharacterNameInput() {
   const [characterName, setCharacterName] = useState("");
 
   useEffect(() => {
-    // Load character name from localStorage
-    const savedName = localStorage.getItem("characterName");
-    if (savedName) {
-      setCharacterName(savedName);
+    // Load character name from customCharacter object
+    const savedCharacter = localStorage.getItem("customCharacter");
+    if (savedCharacter) {
+      const character: CustomCharacter = JSON.parse(savedCharacter);
+      setCharacterName(character.name || "");
     }
   }, []);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setCharacterName(newName);
-    localStorage.setItem("characterName", newName);
+    
+    // Load existing character or create new one
+    const savedCharacter = localStorage.getItem("customCharacter");
+    const character: CustomCharacter = savedCharacter 
+      ? JSON.parse(savedCharacter)
+      : {
+          name: "",
+          class: "",
+          currentAttributes: { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 },
+          race: "",
+          description: { alignment: "", physicalDescription: "", personalityTraits: "", backstory: "" },
+          skills: [],
+          startItems: [],
+        };
+    
+    character.name = newName;
+    localStorage.setItem("customCharacter", JSON.stringify(character));
   };
 
   return (

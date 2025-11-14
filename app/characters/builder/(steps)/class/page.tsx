@@ -50,25 +50,32 @@ export default function CharacterBuilderClassPage() {
     const savedCharacter = localStorage.getItem('customCharacter');
     if (savedCharacter) {
       const parsedCustomCharacter: CustomCharacter = JSON.parse(savedCharacter);
-      //retrieve the selected class from the custom character
-      //if retrievied, map it to character class and look for matching in listed
-      //this is terrible but deadline is tommorrow
-      //TODO: refactor this bullshit
-      //single line is nice tough
-      const characterDetails = mockClasses.find(c => c.name === parsedCustomCharacter.name);
-      setSelectedClass(characterDetails || null);
-      setShowClassList(false);
+      if (parsedCustomCharacter.class) {
+        const characterDetails = mockClasses.find(c => c.name === parsedCustomCharacter.class);
+        setSelectedClass(characterDetails || null);
+        setShowClassList(false);
+      }
     }
   }, []);
 
   const saveChosenClass = (characterClass: CharacterClass) => {
-    //save the selected class in the custom character object
     const savedCharacter = localStorage.getItem('customCharacter');
-    if(savedCharacter){
-      const parsedCustomCharacter: CustomCharacter = JSON.parse(savedCharacter);
-      parsedCustomCharacter.class = characterClass.name;
-      localStorage.setItem('customCharacter', JSON.stringify(parsedCustomCharacter));
-    }
+    const character: CustomCharacter = savedCharacter 
+      ? JSON.parse(savedCharacter)
+      : {
+          name: "",
+          class: "",
+          currentAttributes: { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 },
+          race: "",
+          description: { alignment: "", physicalDescription: "", personalityTraits: "", backstory: "" },
+          skills: [],
+          startItems: [],
+        };
+    
+    character.class = characterClass.name;
+    // Initialize base attributes from class
+    character.currentAttributes = { ...characterClass.attributes };
+    localStorage.setItem('customCharacter', JSON.stringify(character));
   };
 
   return (

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CharacterClass, Attributes } from "@/app/lib/models/classmodel";
+import { CustomCharacter } from "@/app/lib/models/charactermodel";
+import { mockClasses } from "@/app/lib/consts/mockClasses";
 import Image from "next/image";
 
 export default function AttributesPage() {
@@ -27,21 +29,32 @@ export default function AttributesPage() {
   const [selectedClass, setSelectedClass] = useState<CharacterClass | null>(null);
 
   useEffect(() => {
-    // Load selected class from localStorage
-    const storedClass = localStorage.getItem("selectedClass");
-    if (storedClass) {
-      const parsedClass: CharacterClass = JSON.parse(storedClass);
-      setSelectedClass(parsedClass);
-      setBaseAttributes(parsedClass.attributes);
-    }
-
-    // Load saved bonus points if any
-    const storedBonus = localStorage.getItem("attributeBonus");
-    if (storedBonus) {
-      setBonusPoints(JSON.parse(storedBonus));
-      const parsed = JSON.parse(storedBonus);
-      const usedPoints = Object.values(parsed).reduce((sum: number, val) => sum + (val as number), 0);
-      setRemainingPoints(5 - usedPoints);
+    const savedCharacter = localStorage.getItem("customCharacter");
+    if (savedCharacter) {
+      const character: CustomCharacter = JSON.parse(savedCharacter);
+      
+      // Find the class details to get base attributes
+      if (character.class) {
+        const classDetails = mockClasses.find(c => c.name === character.class);
+        if (classDetails) {
+          setSelectedClass(classDetails);
+          setBaseAttributes(classDetails.attributes);
+          
+          // Calculate bonus points from currentAttributes - baseAttributes
+          const bonus: Attributes = {
+            strength: (character.currentAttributes?.strength || 0) - classDetails.attributes.strength,
+            dexterity: (character.currentAttributes?.dexterity || 0) - classDetails.attributes.dexterity,
+            constitution: (character.currentAttributes?.constitution || 0) - classDetails.attributes.constitution,
+            intelligence: (character.currentAttributes?.intelligence || 0) - classDetails.attributes.intelligence,
+            wisdom: (character.currentAttributes?.wisdom || 0) - classDetails.attributes.wisdom,
+            charisma: (character.currentAttributes?.charisma || 0) - classDetails.attributes.charisma,
+          };
+          setBonusPoints(bonus);
+          
+          const usedPoints = Object.values(bonus).reduce((sum, val) => sum + val, 0);
+          setRemainingPoints(5 - usedPoints);
+        }
+      }
     }
   }, []);
 
@@ -49,7 +62,7 @@ export default function AttributesPage() {
     if (remainingPoints > 0) {
       setBonusPoints((prev) => {
         const updated = { ...prev, [attribute]: prev[attribute] + 1 };
-        localStorage.setItem("attributeBonus", JSON.stringify(updated));
+        saveAttributesToCharacter(updated);
         return updated;
       });
       setRemainingPoints((prev) => prev - 1);
@@ -60,10 +73,27 @@ export default function AttributesPage() {
     if (bonusPoints[attribute] > 0) {
       setBonusPoints((prev) => {
         const updated = { ...prev, [attribute]: prev[attribute] - 1 };
-        localStorage.setItem("attributeBonus", JSON.stringify(updated));
+        saveAttributesToCharacter(updated);
         return updated;
       });
       setRemainingPoints((prev) => prev + 1);
+    }
+  };
+
+  const saveAttributesToCharacter = (bonus: Attributes) => {
+    const savedCharacter = localStorage.getItem("customCharacter");
+    if (savedCharacter) {
+      const character: CustomCharacter = JSON.parse(savedCharacter);
+      // Calculate total attributes (base + bonus)
+      character.currentAttributes = {
+        strength: baseAttributes.strength + bonus.strength,
+        dexterity: baseAttributes.dexterity + bonus.dexterity,
+        constitution: baseAttributes.constitution + bonus.constitution,
+        intelligence: baseAttributes.intelligence + bonus.intelligence,
+        wisdom: baseAttributes.wisdom + bonus.wisdom,
+        charisma: baseAttributes.charisma + bonus.charisma,
+      };
+      localStorage.setItem("customCharacter", JSON.stringify(character));
     }
   };
 
