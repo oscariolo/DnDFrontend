@@ -5,14 +5,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const MENU_ITEMS = [
-  { href: '/classShowcase', label: 'clases' },
+  { href: '/clases', label: 'clases' }, 
   { href: '/campaign', label: 'campains' },
   { href: '/characters', label: 'characters' },
   { href: '/play', label: 'play' },
 ];
 
 export default function Menu() {
-  // persist open state so it remains when resizing and across reloads
   const [open, setOpen] = useState<boolean>(() => {
     try {
       return typeof window !== 'undefined' && localStorage.getItem('menuOpen') === 'true';
@@ -47,8 +46,6 @@ export default function Menu() {
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-
-          {/* Desktop menu bar */}
           <nav className="hidden md:flex gap-6 items-center justify-center w-full" aria-label="Primary">
             {MENU_ITEMS.map((item) => {
               const active = isActive(item.href);
@@ -69,21 +66,15 @@ export default function Menu() {
               );
             })}
           </nav>
-
-          {/* spacer for alignment on mobile (keeps layout stable) */}
           <div className="md:hidden w-6" />
         </div>
       </div>
-
-      {/* Mobile drawer + overlay */}
-      {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-200 md:hidden ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setOpen(false)}
         aria-hidden={!open}
       />
 
-      {/* Drawer - changed background to #26282A */}
       <aside
         className={`fixed top-0 left-0 h-full w-64 bg-[#26282A] backdrop-blur-md z-50 transform transition-transform duration-300 md:hidden ${
           open ? 'translate-x-0' : '-translate-x-full'

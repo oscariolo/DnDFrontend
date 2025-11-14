@@ -10,5 +10,6 @@ export interface Attributes{
 export interface CharacterClass{
   name: string;
   description: string;
+  backstory: string;
   attributes: Attributes;
 }
