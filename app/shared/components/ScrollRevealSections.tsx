@@ -75,10 +75,10 @@ export default function ScrollRevealSections() {
               Build unique heroes with customizable attributes, gear and backstory. Start shaping your legend now.
             </p>
             <Link
-              href="/characters/builder"
+              href="/characters/builder/class"
               className="inline-block bg-[#E40712] hover:opacity-90 text-white font-bold px-8 py-4 rounded-xl shadow text-lg md:text-xl tracking-wide"
             >
-              Create Your Character
+              Crea tu propio personaje
             </Link>
           </div>
         </div>
@@ -123,10 +123,10 @@ export default function ScrollRevealSections() {
               Create sprawling adventures, design encounters and guide players through unforgettable stories.
             </p>
             <Link
-              href="/campaign"
+              href="/campaign/builder/basicInfo"
               className="inline-block bg-[#E40712] hover:opacity-90 text-white font-bold px-8 py-4 rounded-xl shadow text-lg md:text-xl tracking-wide"
             >
-              Create Your Campaign
+              Create tu campaña épica
             </Link>
           </div>
         </div>
@@ -152,13 +152,13 @@ export default function ScrollRevealSections() {
           aria-hidden={!active[2]}
         >
           <h2 id="sec3-title" className="sr-only">
-            Play Now
+            Empezar aventura
           </h2>
           <Link
             href="/play"
             className="inline-block bg-[#E40712] hover:opacity-90 text-white font-extrabold px-16 py-8 rounded-3xl shadow-2xl text-3xl md:text-5xl tracking-wide"
           >
-            Play Now
+            Empezar aventura
           </Link>
         </div>
       </section>

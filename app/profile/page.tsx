@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
 const TABS = [
-  { id: 'campaigns', label: 'Campaigns' },
-  { id: 'characters', label: 'Characters' },
+  { id: 'campaigns', label: 'Campañas' },
+  { id: 'characters', label: 'Personajes' },
 ];
 
 export default function ProfilePage() {
@@ -70,13 +70,13 @@ export default function ProfilePage() {
               className={active === 'campaigns' ? 'block' : 'hidden'}
             >
               <div className="rounded-xl bg-white shadow-md p-8">
-                <h2 className="text-2xl font-semibold mb-4 text-black">Your Campaigns</h2>
+                <h2 className="text-2xl font-semibold mb-4 text-black">Mis campañas</h2>
                 <p className="text-black mb-6 text-lg">No campaigns yet. Create and manage your campaigns here.</p>
                 <Link
-                  href="/campaign/builder"
+                  href="/campaign/builder/basicInfo"
                   className="inline-block px-8 py-4 bg-[#E40712] hover:opacity-90 text-white text-lg font-bold rounded-lg shadow-lg"
                 >
-                  Create Campaign
+                  Crear Campaña
                 </Link>
               </div>
             </section>
@@ -89,13 +89,13 @@ export default function ProfilePage() {
               className={active === 'characters' ? 'block' : 'hidden'}
             >
               <div className="rounded-xl bg-white shadow-md p-8">
-                <h2 className="text-2xl font-semibold mb-4 text-black">Your Characters</h2>
+                <h2 className="text-2xl font-semibold mb-4 text-black">Mis personajes</h2>
                 <p className="text-black mb-6 text-lg">No characters yet. Start creating heroes for your adventures.</p>
                 <Link
-                  href="/characters/builder"
+                  href="/characters/builder/class"
                   className="inline-block px-8 py-4 bg-[#E40712] hover:opacity-90 text-white text-lg font-bold rounded-lg shadow-lg"
                 >
-                  Create Character
+                  Crear Personaje
                 </Link>
               </div>
             </section>
