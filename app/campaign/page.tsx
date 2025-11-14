@@ -6,11 +6,11 @@ import Image from "next/image";
 
 // Datos ficticios de campañas
 const campaigns = [
-  { id: 1, img:"/campaign1.png", title: "Campaign One", description: "Description for Campaign One" },
-  { id: 2, img:"/campaign2.png", title: "Campaign Two", description: "Description for Campaign Two" },
-  { id: 3, img:"/campaign3.png", title: "Campaign Three", description: "Description for Campaign Three" },
-  { id: 4, img:"/campaign4.png", title: "Campaign Four", description: "Description for Campaign Four" },
-  { id: 5, img:"/campaign5.png", title: "Campaign Five", description: "Description for Campaign Five" },
+  { id: 1, img:"/images/campaign1.jpg", title: "Campaign One", description: "Description for Campaign One" },
+  { id: 2, img:"/images/campaign1.jpg", title: "Campaign Two", description: "Description for Campaign Two" },
+  { id: 3, img:"/images/campaign1.jpg", title: "Campaign Three", description: "Description for Campaign Three" },
+  { id: 4, img:"/images/campaign1.jpg", title: "Campaign Four", description: "Description for Campaign Four" },
+  { id: 5, img:"/images/campaign1.jpg", title: "Campaign Five", description: "Description for Campaign Five" },
 ];
 
 export default function CampaignPage() {
@@ -135,8 +135,8 @@ export default function CampaignPage() {
                 <div key={c.id} className="shrink-0 w-80 bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col justify-between">
                   <div>
                     <h3 className="text-xl font-bold mb-2 text-white">{c.title}</h3>
-                    <div className="h-32 bg-gray-700 rounded-md mb-4 flex items-center justify-center text-gray-500">
-                      <img src={c.img} alt={c.title} className="rounded-t-xl h-32 object-cover" />
+                    <div className="relative h-32 bg-gray-700 rounded-md mb-4 flex items-center justify-center text-gray-500">
+                      <Image fill src={c.img} alt={c.title} className="rounded-t-xl h-32 object-cover" />
                     </div>
                     <p className="text-sm text-gray-400 mb-4">{c.description}</p>
                   </div>
