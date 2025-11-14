@@ -5,6 +5,27 @@ import ClassCard from './classCard';
 import { mockClasses } from '../lib/consts/mockClasses';
 import ClassModal from '../shared/components/detailedClassPopup';
 import type { CharacterClass } from '../lib/models/classmodel';
+import { CustomCharacter } from '../lib/models/charactermodel';
+
+const saveChosenClass = (characterClass: CharacterClass) => {
+    const savedCharacter = localStorage.getItem('customCharacter');
+    const character: CustomCharacter = savedCharacter 
+      ? JSON.parse(savedCharacter)
+      : {
+          name: "",
+          class: "",
+          currentAttributes: { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 },
+          race: "",
+          description: { alignment: "", physicalDescription: "", personalityTraits: "", backstory: "" },
+          skills: [],
+          startItems: [],
+        };
+    
+    character.class = characterClass.name;
+    // Initialize base attributes from class
+    character.currentAttributes = { ...characterClass.attributes };
+    localStorage.setItem('customCharacter', JSON.stringify(character));
+  };
 
 export default function ClasesPage() {
   const [selected, setSelected] = useState<CharacterClass | null>(null);
@@ -38,9 +59,9 @@ export default function ClasesPage() {
           onClassSelected={() => {
             // Optional: persist full class object for later steps
             try {
-              localStorage.setItem('selectedClass', JSON.stringify(selected));
+              saveChosenClass(selected);
+              router.push('/characters/builder/race');
             } catch {}
-            router.push(`/characters/builder/race?class=${encodeURIComponent(selected.name)}`);
           }}
         />
       )}
