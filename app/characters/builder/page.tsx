@@ -1,5 +1,5 @@
 
-import RedirectCard from "../../components/redirectCard";
+import RedirectCard from "../../shared/components/redirectCard";
 
 export default function CharacterBuilderPage() {
   return (

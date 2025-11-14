@@ -9,6 +9,28 @@ interface ClassModalProps {
   onChangeClass?: () => void;
 }
 
+interface AttributeCardProps {
+  name: string;
+  value: number;
+  iconPath: string;
+  bgColor: string;
+  textColor: string;
+}
+
+function AttributeCard({ name, value, iconPath, bgColor, textColor }: AttributeCardProps) {
+  return (
+    <div className={`${bgColor} rounded-lg overflow-hidden`}>
+      <div className="flex items-center gap-2 bg-gray-300 px-3 py-2">
+        <div className="w-6 h-6 relative shrink-0">
+          <Image src={iconPath} alt={name} fill className="object-contain" />
+        </div>
+        <div className="text-sm text-gray-600 uppercase font-semibold">{name}</div>
+      </div>
+      <div className={`text-2xl font-bold ${textColor} p-3`}>{value}</div>
+    </div>
+  );
+}
+
 export default function ClassModal({ 
   characterClass, 
   onClose, 
@@ -45,34 +67,51 @@ export default function ClassModal({
           <p className="text-gray-600 leading-relaxed">{characterClass.description}</p>
         </div>
       </div>
-
       <div>
         <h3 className="text-xl font-semibold text-gray-700 mb-3">Atributos base</h3>
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-red-50 p-3 rounded-lg">
-            <div className="text-sm text-gray-600 uppercase">Fuerza</div>
-            <div className="text-2xl font-bold text-red-600">{characterClass.attributes.strength}</div>
-          </div>
-          <div className="bg-green-50 p-3 rounded-lg">
-            <div className="text-sm text-gray-600 uppercase">Destreza</div>
-            <div className="text-2xl font-bold text-green-600">{characterClass.attributes.dexterity}</div>
-          </div>
-          <div className="bg-orange-50 p-3 rounded-lg">
-            <div className="text-sm text-gray-600 uppercase">Robustez</div>
-            <div className="text-2xl font-bold text-orange-600">{characterClass.attributes.constitution}</div>
-          </div>
-          <div className="bg-blue-50 p-3 rounded-lg">
-            <div className="text-sm text-gray-600 uppercase">Inteligencia</div>
-            <div className="text-2xl font-bold text-blue-600">{characterClass.attributes.intelligence}</div>
-          </div>
-          <div className="bg-purple-50 p-3 rounded-lg">
-            <div className="text-sm text-gray-600 uppercase">Sabiduria</div>
-            <div className="text-2xl font-bold text-purple-600">{characterClass.attributes.wisdom}</div>
-          </div>
-          <div className="bg-pink-50 p-3 rounded-lg">
-            <div className="text-sm text-gray-600 uppercase">Carisma</div>
-            <div className="text-2xl font-bold text-pink-600">{characterClass.attributes.charisma}</div>
-          </div>
+          <AttributeCard 
+            name="Fuerza" 
+            value={characterClass.attributes.strength} 
+            iconPath="/icons/weight-lifting-up.svg"
+            bgColor="bg-red-50"
+            textColor="text-red-600"
+          />
+          <AttributeCard 
+            name="Destreza" 
+            value={characterClass.attributes.dexterity} 
+            iconPath="/icons/bullseye.svg"
+            bgColor="bg-green-50"
+            textColor="text-green-600"
+          />
+          <AttributeCard 
+            name="Robustez" 
+            value={characterClass.attributes.constitution} 
+            iconPath="/icons/fist.svg"
+            bgColor="bg-orange-50"
+            textColor="text-orange-600"
+          />
+          <AttributeCard 
+            name="Inteligencia" 
+            value={characterClass.attributes.intelligence} 
+            iconPath="/icons/brain.svg"
+            bgColor="bg-blue-50"
+            textColor="text-blue-600"
+          />
+          <AttributeCard 
+            name="Sabiduria" 
+            value={characterClass.attributes.wisdom} 
+            iconPath="/icons/owl.svg"
+            bgColor="bg-purple-50"
+            textColor="text-purple-600"
+          />
+          <AttributeCard 
+            name="Carisma" 
+            value={characterClass.attributes.charisma} 
+            iconPath="/icons/duality-mask.svg"
+            bgColor="bg-pink-50"
+            textColor="text-pink-600"
+          />
         </div>
       </div>
 

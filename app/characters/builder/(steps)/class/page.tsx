@@ -3,7 +3,7 @@
 import { CharacterClass } from "@/app/lib/models/classmodel";
 import { use, useEffect, useState } from "react";
 import Image from "next/image";
-import ClassModal from "./detailedClassPopup";
+import ClassModal from "../../../../shared/components/detailedClassPopup";
 import { ChevronRight } from "lucide-react";
 import { mockClasses } from "@/app/lib/consts/mockClasses";
 import { useRouter } from "next/navigation";
@@ -54,10 +54,10 @@ export default function CharacterBuilderClassPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-amber-50 to-orange-100 p-7">
+    <div className="min-h-screen">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Escoge tu clase</h1>
-        <h1 className="text-2xl font-semibold text-gray-700 mb-6">Según tu clase tendrás atributos base con los cuales tendras mas proficiencia al inicio de la campaña</h1>
+        <h1 className="text-4xl text-center font-bold text-gray-800 mb-8">Escoge tu clase</h1>
+        <h1 className="text-lg text-center font-semibold text-gray-700 mb-6">Según tu clase tendrás atributos base con los cuales tendras mas proficiencia al inicio de la campaña</h1>
 
         
         {showClassList &&(
