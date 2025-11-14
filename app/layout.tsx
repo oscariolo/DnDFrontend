@@ -1,21 +1,46 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { tiamatFont } from './ui/fonts';
 import Link from 'next/link';
 import Menu from './shared/components/Menu';
+import PWAInstallPrompt from './shared/components/PWAInstallPrompt';
 
 export const metadata: Metadata = {
-  title: "DnD Maker",
-  description: "Page dedicated to create characters and campaigns for role playing games",
-};
+  title: 'D&D Character Builder',
+  description: 'Create D&D characters and campaigns',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'D&D Builder'
+  },
+  formatDetection: {
+    telephone: false
+  }
+}
+
+export const viewport: Viewport = {
+  themeColor: '#E40712',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en">
+      <head>
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="D&D Builder" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
       <body
         className={`${tiamatFont.variable} antialiased`}
         style={{ backgroundColor: "#fefcfb", minHeight: "100vh", margin: 0, display: "flex", flexDirection: "column" }}
@@ -263,6 +288,7 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
+        <PWAInstallPrompt />
       </body>
     </html>
   );

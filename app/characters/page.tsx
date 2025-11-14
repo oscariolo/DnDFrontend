@@ -66,44 +66,6 @@ const allCharacters = [
 	},
 ];
 
-export function handleEditCharacter(char: typeof allCharacters[0], router: any) {
-	// Ejemplo de personaje harcodeado
-	const exampleCharacter: CustomCharacter = {
-		name: "Sir Galahad",
-		class: "Paladin",
-		currentAttributes: {
-			strength: 14,
-			dexterity: 10,
-			constitution: 14,
-			intelligence: 10,
-			wisdom: 12,
-			charisma: 14,
-		},
-		race: "Human",
-		description: {
-			alignment: "Legal Bueno",
-			physicalDescription: "Alto, cabello rubio, armadura brillante y capa azul.",
-			personalityTraits: "Valiente, honorable, siempre ayuda a los necesitados.",
-			backstory: "Nacido en una familia noble, entrenado desde niño para proteger el reino y luchar contra el mal.",
-		},
-		skills: [
-			{ name: "Persuasion", description: "Convencer a otros con palabras." },
-			{ name: "Athletics", description: "Realizar hazañas físicas." },
-			{ name: "Religion", description: "Conocimiento sobre dioses y rituales." },
-		],
-		imgsrc: "/images/placeholdercharacter.png",
-		startItems: [
-			{ name: "Bagpipes", description: "Una espada de acero templado." },
-			{ name: "Dice Set", description: "Escudo con el emblema familiar." },
-		],
-	};
-
-  // Guarda el personaje en localStorage
-  localStorage.setItem("customCharacter", JSON.stringify(exampleCharacter));
-  // Redirige al builder
-  router.push("/characters/builder/summary");
-}
-
 export default function CharactersPage() {
 	const [visibleCharacters, setVisibleCharacters] = useState(3);
 	const [noMore, setNoMore] = useState(false);
@@ -171,6 +133,44 @@ export default function CharactersPage() {
 			setVisibleCharacters(visibleCharacters + 2);
 		}
 	};
+
+	const handleEditCharacter = (char: any, router: any) => {
+		// Ejemplo de personaje harcodeado
+		const exampleCharacter: CustomCharacter = {
+			name: "Sir Galahad",
+			class: "Paladin",
+			currentAttributes: {
+				strength: 14,
+				dexterity: 10,
+				constitution: 14,
+				intelligence: 10,
+				wisdom: 12,
+				charisma: 14,
+			},
+			race: "Human",
+			description: {
+				alignment: "Legal Bueno",
+				physicalDescription: "Alto, cabello rubio, armadura brillante y capa azul.",
+				personalityTraits: "Valiente, honorable, siempre ayuda a los necesitados.",
+				backstory: "Nacido en una familia noble, entrenado desde niño para proteger el reino y luchar contra el mal.",
+			},
+			skills: [
+				{ name: "Persuasion", description: "Convencer a otros con palabras." },
+				{ name: "Athletics", description: "Realizar hazañas físicas." },
+				{ name: "Religion", description: "Conocimiento sobre dioses y rituales." },
+			],
+			imgsrc: "/images/placeholdercharacter.png",
+			startItems: [
+				{ name: "Bagpipes", description: "Una espada de acero templado." },
+				{ name: "Dice Set", description: "Escudo con el emblema familiar." },
+			],
+		};
+
+	  // Guarda el personaje en localStorage
+	  localStorage.setItem("customCharacter", JSON.stringify(exampleCharacter));
+	  // Redirige al builder
+	  router.push("/characters/builder/summary");
+	}
 
 	return (
 		<main className="min-h-screen bg-[url('/images/background-bone.png')] px-2 md:px-0 pb-16 overflow-x-hidden">
