@@ -1,4 +1,4 @@
-import SwipeableTab from "@/app/components/swipeableTab";
+import SwipeableTab from "@/app/shared/components/swipeableTab";
 
 const builderSteps = [
   { index: 1, title: "Información Básica", route: "/campaign/builder/basicInfo" },

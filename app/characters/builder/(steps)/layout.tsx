@@ -1,5 +1,5 @@
-import SwipeableTab from "@/app/components/swipeableTab";
-import CharacterNameInput from "@/app/components/characterNameInput";
+import SwipeableTab from "@/app/shared/components/swipeableTab";
+import CharacterNameInput from "@/app/characters/builder/components/characterNameInput";
 
 const builderSteps = [
   { index: 1, title: "Clase", route: "/characters/builder/class" },

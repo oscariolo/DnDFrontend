@@ -67,7 +67,6 @@ export default function ClassModal({
           <p className="text-gray-600 leading-relaxed">{characterClass.description}</p>
         </div>
       </div>
-
       <div>
         <h3 className="text-xl font-semibold text-gray-700 mb-3">Atributos base</h3>
         <div className="grid grid-cols-2 gap-4">

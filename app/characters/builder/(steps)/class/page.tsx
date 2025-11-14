@@ -3,7 +3,7 @@
 import { CharacterClass } from "@/app/lib/models/classmodel";
 import { use, useEffect, useState } from "react";
 import Image from "next/image";
-import ClassModal from "./detailedClassPopup";
+import ClassModal from "../../../../shared/components/detailedClassPopup";
 import { ChevronRight } from "lucide-react";
 import { mockClasses } from "@/app/lib/consts/mockClasses";
 import { useRouter } from "next/navigation";
