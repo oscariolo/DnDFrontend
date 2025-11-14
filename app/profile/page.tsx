@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
 const TABS = [
-  { id: 'campaigns', label: 'Campaigns' },
-  { id: 'characters', label: 'Characters' },
+  { id: 'campaigns', label: 'Campañas' },
+  { id: 'characters', label: 'Personajes' },
 ];
 
 export default function ProfilePage() {
@@ -70,7 +70,7 @@ export default function ProfilePage() {
               className={active === 'campaigns' ? 'block' : 'hidden'}
             >
               <div className="rounded-xl bg-white shadow-md p-8">
-                <h2 className="text-2xl font-semibold mb-4 text-black">Your Campaigns</h2>
+                <h2 className="text-2xl font-semibold mb-4 text-black">Mis campañas</h2>
                 <p className="text-black mb-6 text-lg">No campaigns yet. Create and manage your campaigns here.</p>
                 <Link
                   href="/campaign/builder/basicInfo"
@@ -89,7 +89,7 @@ export default function ProfilePage() {
               className={active === 'characters' ? 'block' : 'hidden'}
             >
               <div className="rounded-xl bg-white shadow-md p-8">
-                <h2 className="text-2xl font-semibold mb-4 text-black">Your Characters</h2>
+                <h2 className="text-2xl font-semibold mb-4 text-black">Mis personajes</h2>
                 <p className="text-black mb-6 text-lg">No characters yet. Start creating heroes for your adventures.</p>
                 <Link
                   href="/characters/builder/class"

@@ -66,7 +66,7 @@ export default function CampaignPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f7f7e3] px-2 md:px-0 pb-16 overflow-x-hidden">
+    <main className="min-h-screen px-2 md:px-0 pb-16 overflow-x-hidden">
       {/* Header */}
       <header className="text-center mb-16 py-12">
         <h1 className={`text-4xl md:text-6xl font-extrabold mb-4 ${fantasyGradientText}`}>Campañas Populares</h1>
