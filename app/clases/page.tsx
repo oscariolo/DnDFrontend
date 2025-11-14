@@ -24,7 +24,7 @@ export default function ClasesPage() {
               key={cls.name}
               title={cls.name}
               description={cls.description}
-              srcimg={`/images/classes/${cls.name.toLowerCase().replace(/\s+/g, '-')}.jpg`}
+              srcimg={`/images/${cls.name.toLowerCase().replace(/\s+/g, '-')}.png`}
               onSelect={() => setSelected(cls)}
             />
           ))}
