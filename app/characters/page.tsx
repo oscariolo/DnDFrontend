@@ -3,20 +3,22 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { CustomCharacter } from "../lib/models/charactermodel";
+import { useRouter } from "next/navigation";	
 
 // Datos ficticios de personajes
 const allCharacters = [
 	{
 		id: 1,
-		name: "Character One",
+		name: "Sir Galahad",
 		story: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla vitae elit mauris. Nunc lacus sem, lobortis ac elit at, lacinia sollicitudin sapien. Vestibulum dui sapien, congue non viverra a, semper quis mi. Fusce eu felis lorem. Suspendisse ac elementum felis, eu sodales justo. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Mauris venenatis, arcu sit amet iaculis lobortis, lorem augue elementum elit, a fringilla neque ante egestas ante. Aliquam ornare lobortis venenatis. Pellentesque ac odio nisl. Donec nec aliquet nulla, a pretium dolor. Etiam ut pellentesque dolor, et convallis magna. Vivamus sollicitudin, felis non egestas posuere, felis libero varius magna, eu luctus mauris massa sed erat. Donec nec eleifend urna. Quisque dignissim cursus arcu eu aliquam.",
 		attributes: [
-			{ label: "Strength", value: 10 },
-			{ label: "Dexterity", value: 12 },
-			{ label: "Intelligence", value: 14 },
-      { label: "Charisma", value: 16 },
-      { label: "Wisdom", value: 13 },
-      { label: "Constitution", value: 11 },
+			{ label: "Robustez", value: 14 },
+			{ label: "Inteligencia", value: 10 },
+			{ label: "Fuerza", value: 14 },
+			{ label: "Destreza", value: 10 },
+			{ label: "Carisma", value: 12 },
+			{ label: "Sabiduría", value: 14 },
 		],
 		img: "/images/placeholdercharacter.png",
 	},
@@ -25,12 +27,12 @@ const allCharacters = [
 		name: "Character Two",
 		story: "Backstory for Character Two",
 		attributes: [
-			{ label: "Strength", value: 14 },
-			{ label: "Dexterity", value: 10 },
-			{ label: "Intelligence", value: 12 },
-      { label: "Charisma", value: 11 },
-      { label: "Wisdom", value: 15 },
-      { label: "Constitution", value: 13 },
+			{ label: "Robustez", value: 12 },
+			{ label: "Inteligencia", value: 14 },
+			{ label: "Fuerza", value: 10 },
+			{ label: "Destreza", value: 12 },
+			{ label: "Carisma", value: 14 },
+			{ label: "Sabiduría", value: 15 },
 		],
 		img: "/images/character-2.png",
 	},
@@ -39,12 +41,12 @@ const allCharacters = [
 		name: "Character Three",
 		story: "Backstory for Character Three",
 		attributes: [
-			{ label: "Strength", value: 12 },
-			{ label: "Dexterity", value: 14 },
-			{ label: "Intelligence", value: 10 },
-      { label: "Charisma", value: 12 },
-      { label: "Wisdom", value: 14 },
-      { label: "Constitution", value: 15 },
+			{ label: "Robustez", value: 12 },
+			{ label: "Inteligencia", value: 14 },
+			{ label: "Fuerza", value: 10 },
+			{ label: "Destreza", value: 10 },
+			{ label: "Carisma", value: 14 },
+			{ label: "Sabiduría", value: 15 },
 		],
 		img: "/images/character-3.png",
 	},
@@ -53,25 +55,60 @@ const allCharacters = [
 		name: "Character Four",
 		story: "Backstory for Character Four",
 		attributes: [
-			{ label: "Strength", value: 8 },
-			{ label: "Dexterity", value: 16 },
-			{ label: "Intelligence", value: 14 },
-      { label: "Charisma", value: 13 },
-      { label: "Wisdom", value: 12 },
-      { label: "Constitution", value: 10 },
+			{ label: "Robustez", value: 12 },
+			{ label: "Inteligencia", value: 14 },
+			{ label: "Fuerza", value: 10 },
+			{ label: "Destreza", value: 12 },
+			{ label: "Carisma", value: 14 },
+			{ label: "Sabiduría", value: 15 },
 		],
 		img: "/images/character-4.png",
 	},
 ];
 
-export function handleEditCharacter(char: typeof allCharacters[0]) {
-	
+export function handleEditCharacter(char: typeof allCharacters[0], router: any) {
+	// Ejemplo de personaje harcodeado
+	const exampleCharacter: CustomCharacter = {
+		name: "Sir Galahad",
+		class: "Paladin",
+		currentAttributes: {
+			strength: 14,
+			dexterity: 10,
+			constitution: 14,
+			intelligence: 10,
+			wisdom: 12,
+			charisma: 14,
+		},
+		race: "Human",
+		description: {
+			alignment: "Legal Bueno",
+			physicalDescription: "Alto, cabello rubio, armadura brillante y capa azul.",
+			personalityTraits: "Valiente, honorable, siempre ayuda a los necesitados.",
+			backstory: "Nacido en una familia noble, entrenado desde niño para proteger el reino y luchar contra el mal.",
+		},
+		skills: [
+			{ name: "Persuasion", description: "Convencer a otros con palabras." },
+			{ name: "Athletics", description: "Realizar hazañas físicas." },
+			{ name: "Religion", description: "Conocimiento sobre dioses y rituales." },
+		],
+		imgsrc: "/images/placeholdercharacter.png",
+		startItems: [
+			{ name: "Bagpipes", description: "Una espada de acero templado." },
+			{ name: "Dice Set", description: "Escudo con el emblema familiar." },
+		],
+	};
+
+  // Guarda el personaje en localStorage
+  localStorage.setItem("customCharacter", JSON.stringify(exampleCharacter));
+  // Redirige al builder
+  router.push("/characters/builder/summary");
 }
 
 export default function CharactersPage() {
 	const [visibleCharacters, setVisibleCharacters] = useState(3);
 	const [noMore, setNoMore] = useState(false);
 	const createCharRef = useRef<HTMLDivElement>(null);
+	const router = useRouter();
 
 	// Para animación scroll reveal por personaje
 	const charRefs = allCharacters.map(() => useRef<HTMLDivElement | null>(null));
@@ -136,7 +173,7 @@ export default function CharactersPage() {
 	};
 
 	return (
-		<main className="min-h-screen bg-[#f7f7e3] px-2 md:px-0 pb-16 overflow-x-hidden">
+		<main className="min-h-screen bg-[url('/images/background-bone.png')] px-2 md:px-0 pb-16 overflow-x-hidden">
       				{/* Header */}
 				<header className="text-center mb-16 py-12">
 					<h1
@@ -261,12 +298,10 @@ export default function CharactersPage() {
                   <div
                     className="flex flex-col md:flex-row gap-4 mt-8 w-full static mb-6 md:absolute md:bottom-3 md:right-3 md:w-auto md:mt-0 items-center md:items-end justify-center md:justify-end"
                   >
-                    <Link href="/characters/builder/">
-                      <button onClick={()=>handleEditCharacter(char)} className="w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow text-center">
-                        Editar personaje
-                      </button>
-                    </Link>
-                    <Link href="/characters/builder/">
+					<button onClick={()=>handleEditCharacter(char, router)} className="w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow text-center">
+					Editar personaje
+					</button>
+                    <Link href="/campaign">
                       <button className="w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow text-center">
                         Usar personaje
                       </button>
@@ -301,9 +336,6 @@ export default function CharactersPage() {
 					</div>
 				</section>
 			</div>
-			<footer className="text-center py-8 ">
-				<p className="text-gray-500">D&D Hub - Un proyecto de pasión. 2025.</p>
-			</footer>
       {/* Oculta el scroll horizontal del carrusel */}
       <style>{`
         .scroll-container {
