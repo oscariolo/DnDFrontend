@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import Image from "next/image";
 
 // Datos ficticios de campañas
 const campaigns = [
@@ -14,6 +15,7 @@ const campaigns = [
 
 export default function CampaignPage() {
   const createCampRef = useRef<HTMLDivElement>(null);
+  const [showCommunityGrid, setShowCommunityGrid] = useState(false);
 
   const fantasyGradientText = "bg-clip-text text-transparent bg-gradient-to-r from-black via-gray-900 to-black";
 
@@ -26,7 +28,7 @@ export default function CampaignPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f7f7e3] px-2 md:px-0 pb-16">
+    <main className="min-h-screen bg-[#f7f7e3] px-2 md:px-0 pb-16 overflow-x-hidden">
       <div className="container mx-auto px-4 py-12 max-w-7xl">
         {/* Header */}
         <header className="text-center mb-16">
@@ -36,45 +38,92 @@ export default function CampaignPage() {
           </p>
         </header>
 
-        {/* Tarjeta Crear Campaña */}
+        {/* Tarjeta Crear Campaña estilo banner */}
         <section className="mb-20 flex justify-center">
-          <div ref={createCampRef} className="bg-gray-800 rounded-lg shadow-xl p-8 flex flex-col items-center text-center transition-all duration-300 hover:shadow-fuchsia-900/40 hover:scale-[1.02] max-w-xl w-full">
-            <div className="p-4 bg-gray-700 rounded-full mb-4">
-              <svg className="w-10 h-10 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+          <div className="relative w-screen h-[60vh] max-h-[80vh] flex items-center justify-center overflow-hidden shadow-xl">
+            {/* Fondo tipo banner */}
+            <Image
+              src="/images/background.png"
+              alt="Background"
+              fill
+              className="object-cover absolute inset-0 w-full h-full"
+              priority
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="relative w-80 h-96 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center z-10">
+                  <Image
+                    src="/campaign1.png"
+                    alt="Campaign"
+                    fill
+                    className="object-cover absolute inset-0 rounded-lg opacity-50"
+                  />
+                </div>
+              </div>
             </div>
-            <h2 className="text-3xl font-bold mb-4 text-white">Crea tu Campaña</h2>
-            <p className="text-gray-400 mb-6">
-              Diseña mundos épicos, tramas intrigantes y desafíos mortales. Conviértete en el Dungeon Master que guía la historia y da vida a la aventura para tus jugadores.
-            </p>
-            <Link href="/campaign/builder">
-              <button className="mt-auto w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
-                Empezar Nueva Campaña
-              </button>
-            </Link>
+            {/* Contenido */}
+            <div
+              ref={createCampRef}
+              className="absolute inset-0 flex flex-col items-center justify-center z-30 px-4"
+            >
+              <h2 className="text-4xl text-white mb-4 drop-shadow-2xl text-center">
+                Crea tu Campaña
+              </h2>
+              <p className="text-gray-200 mb-6 text-center max-w-xl">
+                Diseña mundos épicos, tramas intrigantes y desafíos mortales. Conviértete en el Dungeon Master que guía la historia y da vida a la aventura para tus jugadores.
+              </p>
+              <Link href="/campaign/builder">
+                <button className="mt-auto w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                  Empezar Nueva Campaña
+                </button>
+              </Link>
+            </div>
           </div>
         </section>
 
-        {/* Campañas Populares */}
-        <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-8 text-center fantasy-gradient-text">Campañas de la Comunidad</h2>
-          <div className="relative">
-            <div className="flex overflow-x-auto space-x-6 pb-6 scroll-container">  
-              {campaigns.map((c) => (
-                <div key={c.id} className="shrink-0 w-80 bg-gray-800 rounded-lg shadow-lg p-6 cursor-pointer transition-all duration-300 hover:bg-gray-700 hover:shadow-lg hover:scale-105">
-                  <h3 className="text-xl font-bold mb-2 text-white">{c.title}</h3>
-                  <div className="h-32 bg-gray-700 rounded-md mb-4 flex items-center justify-center text-gray-500">
-                    <img src={c.img} alt={c.title} className="rounded-t-xl h-36 object-cover" />
-                  </div>
-                  <p className="text-sm text-gray-400">{c.description}</p>
-                </div>
-              ))}
-            </div>
+        {/* Botón para mostrar campañas de la comunidad */}
+        {!showCommunityGrid && (
+          <div className="text-center mb-12">
+            <button
+              className="w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+              onClick={() => setShowCommunityGrid(true)}
+            >
+              Crear campaña usando la de la comunidad
+            </button>
           </div>
-        </section>
+        )}
+
+        {/* Carrusel de campañas de la comunidad */}
+        {showCommunityGrid && (
+          <section className="mb-20">
+            <h2 className="text-3xl font-bold mb-8 text-center">Campañas de la Comunidad</h2>
+            <div className="relative">
+              <div className="flex overflow-x-auto space-x-6 pb-6 scroll-container">
+                {campaigns.map((c) => (
+                  <div key={c.id} className="flex-shrink-0 w-80 bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold mb-2 text-white">{c.title}</h3>
+                      <div className="h-32 bg-gray-700 rounded-md mb-4 flex items-center justify-center text-gray-500">
+                        <img src={c.img} alt={c.title} className="rounded-t-xl h-32 object-cover" />
+                      </div>
+                      <p className="text-sm text-gray-400 mb-4">{c.description}</p>
+                    </div>
+                    <button
+                      className="mt-4 w-full bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow"
+                    >
+                      Usar campaña
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Botón para hacer scroll a crear campaña */}
         <div className="text-center mt-16">
           <button
-            className="w-full md:w-auto bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+            className="w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
             onClick={scrollToCreateCampaign}
           >
             ¡Crea tu Campaña!

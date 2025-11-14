@@ -9,13 +9,16 @@ const allCharacters = [
 	{
 		id: 1,
 		name: "Character One",
-		story: "Backstory for Character One",
+		story: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla vitae elit mauris. Nunc lacus sem, lobortis ac elit at, lacinia sollicitudin sapien. Vestibulum dui sapien, congue non viverra a, semper quis mi. Fusce eu felis lorem. Suspendisse ac elementum felis, eu sodales justo. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Mauris venenatis, arcu sit amet iaculis lobortis, lorem augue elementum elit, a fringilla neque ante egestas ante. Aliquam ornare lobortis venenatis. Pellentesque ac odio nisl. Donec nec aliquet nulla, a pretium dolor. Etiam ut pellentesque dolor, et convallis magna. Vivamus sollicitudin, felis non egestas posuere, felis libero varius magna, eu luctus mauris massa sed erat. Donec nec eleifend urna. Quisque dignissim cursus arcu eu aliquam.",
 		attributes: [
 			{ label: "Strength", value: 10 },
 			{ label: "Dexterity", value: 12 },
 			{ label: "Intelligence", value: 14 },
+      { label: "Charisma", value: 16 },
+      { label: "Wisdom", value: 13 },
+      { label: "Constitution", value: 11 },
 		],
-		img: "/character1.png",
+		img: "/images/placeholdercharacter.png",
 	},
 	{
 		id: 2,
@@ -25,8 +28,11 @@ const allCharacters = [
 			{ label: "Strength", value: 14 },
 			{ label: "Dexterity", value: 10 },
 			{ label: "Intelligence", value: 12 },
+      { label: "Charisma", value: 11 },
+      { label: "Wisdom", value: 15 },
+      { label: "Constitution", value: 13 },
 		],
-		img: "/character2.png",
+		img: "/images/character-2.png",
 	},
 	{
 		id: 3,
@@ -36,8 +42,11 @@ const allCharacters = [
 			{ label: "Strength", value: 12 },
 			{ label: "Dexterity", value: 14 },
 			{ label: "Intelligence", value: 10 },
+      { label: "Charisma", value: 12 },
+      { label: "Wisdom", value: 14 },
+      { label: "Constitution", value: 15 },
 		],
-		img: "/character3.png",
+		img: "/images/character-3.png",
 	},
 	{
 		id: 4,
@@ -47,8 +56,11 @@ const allCharacters = [
 			{ label: "Strength", value: 8 },
 			{ label: "Dexterity", value: 16 },
 			{ label: "Intelligence", value: 14 },
+      { label: "Charisma", value: 13 },
+      { label: "Wisdom", value: 12 },
+      { label: "Constitution", value: 10 },
 		],
-		img: "/character4.png",
+		img: "/images/character-4.png",
 	},
 ];
 
@@ -120,7 +132,7 @@ export default function CharactersPage() {
 	};
 
 	return (
-		<main className="min-h-screen bg-[#f7f7e3] px-2 md:px-0 pb-16">
+		<main className="min-h-screen bg-[#f7f7e3] px-2 md:px-0 pb-16 overflow-x-hidden">
       				{/* Header */}
 				<header className="text-center mb-16 py-12">
 					<h1
@@ -155,7 +167,7 @@ export default function CharactersPage() {
 						ref={createCharRef}
 						className="absolute inset-0 flex flex-col items-center justify-center z-30 px-4"
 					>
-						<h2 className="text-4xl sm:text-5xl font-bold text-white drop-shadow-2xl text-center px-4 mb-6">
+						<h2 className="text-4xl sm:text-5xl text-white drop-shadow-2xl text-center px-4 mb-6">
 							Crea tu Personaje
 						</h2>
 						<p className="text-gray-200 mb-6 text-center max-w-xl">
@@ -179,66 +191,87 @@ export default function CharactersPage() {
 					>
 						Personajes Destacados
 					</h2>
-					<div className="space-y-1">
-						{allCharacters.slice(0, visibleCharacters).map((char, idx) => (
-							<div
-								key={char.id}
-								ref={charRefs[idx]}
-								className={`relative w-screen left-1/2 right-1/2 -mx-[50vw] min-h-[60vh] flex items-center justify-center overflow-hidden shadow-xl transition-all duration-700 ease-out bg-gray-800 ${
-									active[idx]
-										? "opacity-100 translate-y-0"
-										: "opacity-0 translate-y-8"
-								}`}
-								style={{ willChange: "opacity, transform" }}
-							>
-								{/* Fondo con imagen si existe */}
-								{char.img && (
-									<>
-										<Image
-											src={char.img}
-											alt={char.name}
-											fill
-											className="object-cover absolute inset-0 z-0 opacity-30"
-											priority={false}
-										/>
-										<div className="absolute inset-0 bg-black bg-opacity-60 z-0" />
-									</>
-								)}
-								{/* Contenido */}
-								<div
-									className={`relative z-10 max-w-4xl w-full px-6 flex flex-col md:flex-row items-center gap-10`}
-								>
-									{/* Imagen destacada */}
-									<div className="w-64 h-64 rounded-full overflow-hidden border-4 border-white shadow-lg flex-shrink-0 bg-gray-800 flex items-center justify-center">
-										<Image
-											src={char.img}
-											alt={char.name}
-											width={256}
-											height={256}
-											className="object-cover w-full h-full"
-											priority={false}
-										/>
-									</div>
-									{/* Info */}
-									<div className="flex-1 text-white">
-										<h3 className="text-2xl md:text-3xl font-bold mb-3">{char.name}</h3>
-										<p className="text-gray-200 mb-4">"{char.story}"</p>
-										<div className="text-sm">
-											<strong className="text-[#e40712]">Atributos Clave:</strong>
-											<ul className="list-disc list-inside text-gray-300 mt-2">
-												{char.attributes.map((a) => (
-													<li key={a.label}>
-														{a.label}: {a.value}
-													</li>
-												))}
-											</ul>
-										</div>
-									</div>
-								</div>
-							</div>
-						))}
-					</div>
-
+          {allCharacters.slice(0, visibleCharacters).map((char, idx) => (
+            <div
+              key={char.id}
+              ref={charRefs[idx]}
+              className={`relative w-full md:w-screen md:left-1/2 md:right-1/2 md:-mx-[50vw] min-h-[60vh] flex items-center justify-center overflow-hidden shadow-xl transition-all duration-700 ease-out bg-gray-800 mb-2
+                ${active[idx] 
+                  ? "opacity-100 translate-y-0" 
+                  : "opacity-0 translate-y-8"}
+              `}
+              style={{ willChange: "opacity, transform" }}
+            >
+              <div className="absolute inset-0 bg-black bg-opacity-60 z-0" />
+                <Image
+                  src="/images/background-characters.png"
+                  alt="Background Characters"
+                  fill
+                  className="object-cover absolute inset-0 z-0 opacity-50"
+                  priority={false}
+                />
+              {/* Contenido */}
+              <div
+                className={`relative z-10 max-w-4xl w-full px-6 flex flex-col md:flex-row items-center gap-10`}
+              >
+                {/* Imagen destacada */}
+                <div className="relative w-64 h-64 flex items-center justify-center mt-8 md:mt-0">
+                  {/* Marco dorado */}
+                  <Image
+                    src="/images/GoldenRing.png"
+                    alt="Marco dorado"
+                    fill
+                    className="object-contain z-10 pointer-events-none"
+                    priority={false}
+                  />
+                  {/* Imagen del personaje */}
+                  <div className="absolute inset-9   rounded-full overflow-hidden z-20 bg-gray-800 flex items-center justify-center">
+                    <Image
+                      src={char.img}
+                      alt={char.name}
+                      fill
+                      className="object-cover"
+                      priority={false}
+                    />
+                  </div>
+                </div>
+                {/* Info */}
+                <div className="flex-1 text-white relative pb-0 md:pb-24 px-2 md:px-4">
+                  <h3 className="text-2xl md:text-3xl font-bold mb-3 mt-6">{char.name}</h3>
+                  <p className="text-gray-200 mb-4 max-h-40 overflow-y-auto px-4 py-3 rounded-lg bg-gray-700/50 border border-white/20 shadow-inner scroll-container">"{char.story}"</p>
+                  <div className="text-sm">
+                    <strong className="text-2xl text-[#e40712]">Atributos Clave:</strong>
+                    <div className="flex flex-col md:flex-row gap-4 mt-2">
+                      <ul className="list-disc list-inside text-xl text-gray-300 flex-1">
+                        {char.attributes.slice(0, 3).map((a) => (
+                          <li key={a.label}>{a.label}: {a.value}</li>
+                        ))}
+                      </ul>
+                      <ul className="list-disc list-inside text-xl text-gray-300 flex-1">
+                        {char.attributes.slice(3, 6).map((a) => (
+                          <li key={a.label}>{a.label}: {a.value}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  <div
+                    className="flex flex-col md:flex-row gap-4 mt-8 w-full static mb-6 md:absolute md:bottom-3 md:right-3 md:w-auto md:mt-0 items-center md:items-end justify-center md:justify-end"
+                  >
+                    <Link href="/characters/builder/">
+                      <button className="w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow text-center">
+                        Editar personaje
+                      </button>
+                    </Link>
+                    <Link href="/characters/builder/">
+                      <button className="w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow text-center">
+                        Usar personaje
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
 					{/* Pie de Sección */}
 					<div className="text-center mt-16">
 						{!noMore ? (
@@ -267,6 +300,16 @@ export default function CharactersPage() {
 			<footer className="text-center py-8 ">
 				<p className="text-gray-500">D&D Hub - Un proyecto de pasión. 2025.</p>
 			</footer>
+      {/* Oculta el scroll horizontal del carrusel */}
+      <style>{`
+        .scroll-container {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scroll-container::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
 		</main>
 	);
 }
