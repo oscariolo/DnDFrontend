@@ -78,6 +78,14 @@ export default function CharacterBuilderClassPage() {
     localStorage.setItem('customCharacter', JSON.stringify(character));
   };
 
+  const resetChosenClass = () => {
+    const savedCharacter = localStorage.getItem('customCharacter');
+    if (savedCharacter) {
+      const character: CustomCharacter = JSON.parse(savedCharacter);
+      character.class = "";
+      localStorage.setItem('customCharacter', JSON.stringify(character));
+    } };
+
   return (
     <div className="min-h-screen">
       <div className="max-w-3xl mx-auto">
@@ -109,7 +117,7 @@ export default function CharacterBuilderClassPage() {
               setSelectedClass(null);
               setShowClassList(true);
               saveChosenClass(selectedClass);
-            
+              resetChosenClass();
             }}
             isInline={true}
           ></ClassModal>
