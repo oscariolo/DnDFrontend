@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { tiamatFont } from "./ui/fonts";
-import Menu from './components/Menu';
-
+import Menu from "./shared/components/Menu";
 
 export const metadata: Metadata = {
   title: "DnD Maker",

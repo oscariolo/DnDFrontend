@@ -1,5 +1,6 @@
+import ScrollRevealSections from "./shared/components/ScrollRevealSections";
 import Banner from "./ui/banner";
-import ScrollRevealSections from "./components/ScrollRevealSections";
+
 
 export default function Home() {
   return (

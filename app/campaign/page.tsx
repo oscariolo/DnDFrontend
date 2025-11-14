@@ -60,7 +60,7 @@ export default function CampaignPage() {
           <div className="relative">
             <div className="flex overflow-x-auto space-x-6 pb-6 scroll-container">  
               {campaigns.map((c) => (
-                <div key={c.id} className="flex-shrink-0 w-80 bg-gray-800 rounded-lg shadow-lg p-6 cursor-pointer transition-all duration-300 hover:bg-gray-700 hover:shadow-lg hover:scale-105">
+                <div key={c.id} className="shrink-0 w-80 bg-gray-800 rounded-lg shadow-lg p-6 cursor-pointer transition-all duration-300 hover:bg-gray-700 hover:shadow-lg hover:scale-105">
                   <h3 className="text-xl font-bold mb-2 text-white">{c.title}</h3>
                   <div className="h-32 bg-gray-700 rounded-md mb-4 flex items-center justify-center text-gray-500">
                     <img src={c.img} alt={c.title} className="rounded-t-xl h-36 object-cover" />
