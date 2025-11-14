@@ -1,10 +1,11 @@
-import { RaceResponse } from "@/app/lib/services/characterServices";
+
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { RaceDetails } from "@/app/lib/models/charactermodel";
 
 interface RaceModalProps {
-  race: RaceResponse;
+  race: RaceDetails;
   onClose: () => void;
   onRaceSelected: () => void;
   isInline?: boolean;
