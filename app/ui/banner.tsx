@@ -106,16 +106,16 @@ export default function Banner() {
         </h1>
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 pointer-events-auto">
           <Link
-            href="/characters/builder"
+            href="/characters"
             className="px-8 sm:px-10 py-4 bg-[#E40712] hover:opacity-90 text-white font-bold rounded-xl transition-colors duration-200 shadow-lg text-base sm:text-xl tracking-wide"
           >
-            Create Character
+            Explorar Personajes
           </Link>
           <Link
             href="/campaign"
             className="px-8 sm:px-10 py-4 bg-[#E40712] hover:opacity-90 text-white font-bold rounded-xl transition-colors duration-200 shadow-lg text-base sm:text-xl tracking-wide"
           >
-            Create Campaign
+            Explorar Campañas
           </Link>
         </div>
       </div>

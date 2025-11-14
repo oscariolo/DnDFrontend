@@ -73,10 +73,10 @@ export default function ProfilePage() {
                 <h2 className="text-2xl font-semibold mb-4 text-black">Your Campaigns</h2>
                 <p className="text-black mb-6 text-lg">No campaigns yet. Create and manage your campaigns here.</p>
                 <Link
-                  href="/campaign/builder"
+                  href="/campaign/builder/basicInfo"
                   className="inline-block px-8 py-4 bg-[#E40712] hover:opacity-90 text-white text-lg font-bold rounded-lg shadow-lg"
                 >
-                  Create Campaign
+                  Crear Campaña
                 </Link>
               </div>
             </section>
@@ -92,10 +92,10 @@ export default function ProfilePage() {
                 <h2 className="text-2xl font-semibold mb-4 text-black">Your Characters</h2>
                 <p className="text-black mb-6 text-lg">No characters yet. Start creating heroes for your adventures.</p>
                 <Link
-                  href="/characters/builder"
+                  href="/characters/builder/class"
                   className="inline-block px-8 py-4 bg-[#E40712] hover:opacity-90 text-white text-lg font-bold rounded-lg shadow-lg"
                 >
-                  Create Character
+                  Crear Personaje
                 </Link>
               </div>
             </section>

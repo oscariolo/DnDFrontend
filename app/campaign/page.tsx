@@ -108,7 +108,7 @@ export default function CampaignPage() {
             <p className="text-gray-200 mb-6 text-center max-w-xl">
               Diseña mundos épicos, tramas intrigantes y desafíos mortales. Conviértete en el Dungeon Master que guía la historia y da vida a la aventura para tus jugadores.
             </p>
-            <Link href="/campaign/builder">
+            <Link href="/campaign/builder/basicInfo">
               <button className="mt-auto w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
                 Empezar Nueva Campaña
               </button>
