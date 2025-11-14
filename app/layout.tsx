@@ -18,9 +18,8 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${tiamatFont.variable} antialiased`}
-        style={{ backgroundColor: "#090809", minHeight: "100vh", margin: 0, display: "flex", flexDirection: "column" }}
+        style={{ backgroundColor: "#FEFEFC", minHeight: "100vh", margin: 0, display: "flex", flexDirection: "column" }}
       >
-        {/* Top header: logo left, icons right */}
         <header style={{
           display: 'flex',
           alignItems: 'center',
