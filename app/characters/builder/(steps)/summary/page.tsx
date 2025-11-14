@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { CharacterClass, Attributes } from "@/app/lib/models/classmodel";
-import { DescriptionContent, RaceDetails } from "@/app/lib/models/charactermodel";
+import { CustomCharacter, DescriptionContent, RaceDetails } from "@/app/lib/models/charactermodel";
 
 export default function SummaryPage() {
   const router = useRouter();
@@ -16,6 +16,15 @@ export default function SummaryPage() {
   const [description, setDescription] = useState<DescriptionContent | null>(null);
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+
+  useEffect(()=>{
+    // Retrieving the class personalization as an object itself instead of retrieving individual attributes
+    const classData = localStorage.getItem("customCharacter");
+    if (classData) {
+      const parsedClass: CustomCharacter = JSON.parse(classData);
+    }
+
+  });
 
   useEffect(() => {
     // Load all character data from localStorage

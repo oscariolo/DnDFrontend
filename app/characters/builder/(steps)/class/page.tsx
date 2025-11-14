@@ -1,12 +1,14 @@
 "use client";
 
-import { CharacterClass } from "@/app/lib/models/classmodel";
+
 import { use, useEffect, useState } from "react";
 import Image from "next/image";
 import ClassModal from "../../../../shared/components/detailedClassPopup";
 import { ChevronRight } from "lucide-react";
 import { mockClasses } from "@/app/lib/consts/mockClasses";
 import { useRouter } from "next/navigation";
+import { CustomCharacter } from "@/app/lib/models/charactermodel";
+import { CharacterClass } from "@/app/lib/models/classmodel";
 
 interface ClassCardProps {
   characterClass: CharacterClass;
@@ -45,13 +47,29 @@ export default function CharacterBuilderClassPage() {
   const router= useRouter();
 
   useEffect(() => {
-    const savedClassLocal = localStorage.getItem('selectedClass');
-    if (savedClassLocal) {
-      const parsedClass: CharacterClass = JSON.parse(savedClassLocal);
-      setSelectedClass(parsedClass);
+    const savedCharacter = localStorage.getItem('customCharacter');
+    if (savedCharacter) {
+      const parsedCustomCharacter: CustomCharacter = JSON.parse(savedCharacter);
+      //retrieve the selected class from the custom character
+      //if retrievied, map it to character class and look for matching in listed
+      //this is terrible but deadline is tommorrow
+      //TODO: refactor this bullshit
+      //single line is nice tough
+      const characterDetails = mockClasses.find(c => c.name === parsedCustomCharacter.name);
+      setSelectedClass(characterDetails || null);
       setShowClassList(false);
     }
   }, []);
+
+  const saveChosenClass = (characterClass: CharacterClass) => {
+    //save the selected class in the custom character object
+    const savedCharacter = localStorage.getItem('customCharacter');
+    if(savedCharacter){
+      const parsedCustomCharacter: CustomCharacter = JSON.parse(savedCharacter);
+      parsedCustomCharacter.class = characterClass.name;
+      localStorage.setItem('customCharacter', JSON.stringify(parsedCustomCharacter));
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -83,7 +101,7 @@ export default function CharacterBuilderClassPage() {
             onChangeClass={()=>{
               setSelectedClass(null);
               setShowClassList(true);
-              localStorage.removeItem('selectedClass');
+              saveChosenClass(selectedClass);
             
             }}
             isInline={true}
@@ -99,7 +117,7 @@ export default function CharacterBuilderClassPage() {
               // Selecciona la clase y cierra el modal
               setSelectedClass(detailClass);
               setShowClassList(false);
-              localStorage.setItem('selectedClass', JSON.stringify(detailClass));
+              saveChosenClass(detailClass);
               router.push('/characters/builder/race');
             }}
           />
