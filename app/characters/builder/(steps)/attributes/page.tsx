@@ -81,7 +81,7 @@ export default function AttributesPage() {
   ];
 
   return (
-    <div className="p-8 min-h-screen bg-white">
+    <div className="p-8 min-h-screen">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-center mb-2 text-gray-900">
           Bonus de atributos

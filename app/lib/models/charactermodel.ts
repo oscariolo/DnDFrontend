@@ -6,10 +6,10 @@ export interface CustomCharacter{
     class: string;
     currentAttributes: Attributes;
     race: string;
-    description: string;
-    skills: string[];
+    description: DescriptionContent;
+    skills: StarterItem[];
     imgsrc?: string;
-    startItems?: string[];
+    startItems?: StarterItem[];
 }
 
 export interface DescriptionContent{
@@ -17,4 +17,17 @@ export interface DescriptionContent{
     physicalDescription: string;
     personalityTraits: string;
     backstory: string;
+}
+
+export interface RaceDetails{
+    name: string;
+    size_description: string;
+    alignment?: string;
+    age?: string;
+    traits?: {name:string; desc:string}[];
+}
+
+export interface StarterItem{
+    name: string;
+    description: string;
 }

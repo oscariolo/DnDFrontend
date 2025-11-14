@@ -1,4 +1,5 @@
 import { ApolloClient, InMemoryCache, gql, HttpLink } from '@apollo/client';
+import { RaceDetails } from '../models/charactermodel';
 
 const GRAPHQL_URL = "https://www.dnd5eapi.co/graphql/2014"; // Replace with your GraphQL endpoint
 
@@ -16,15 +17,6 @@ const client = new ApolloClient({
 interface queryResponse {
   name: string;
   description: string;
-}
-
-export interface RaceResponse {
-  name: string;
-  size_description: string;
-  alignment?: string;
-  age?: string;
-  traits?: {name:string; desc:string}[];
-
 }
 
 // GraphQL query for races
@@ -90,10 +82,10 @@ export async function getListOfRaces(): Promise<queryResponse[]> {
   }
 }
 
-export async function getFullRaceData(): Promise<RaceResponse[]> {
+export async function getFullRaceData(): Promise<RaceDetails[]> {
   try {
     const { data } = await client.query<{
-      races: RaceResponse[];
+      races: RaceDetails[];
     }>({
       query: GET_RACES,
     });

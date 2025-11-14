@@ -4,14 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { CharacterClass, Attributes } from "@/app/lib/models/classmodel";
-import { DescriptionContent } from "@/app/lib/models/charactermodel";
-import { RaceResponse } from "@/app/lib/services/characterServices";
+import { DescriptionContent, RaceDetails } from "@/app/lib/models/charactermodel";
 
 export default function SummaryPage() {
   const router = useRouter();
   const [characterName, setCharacterName] = useState("");
   const [selectedClass, setSelectedClass] = useState<CharacterClass | null>(null);
-  const [selectedRace, setSelectedRace] = useState<RaceResponse | null>(null);
+  const [selectedRace, setSelectedRace] = useState<RaceDetails | null>(null);
   const [baseAttributes, setBaseAttributes] = useState<Attributes | null>(null);
   const [bonusAttributes, setBonusAttributes] = useState<Attributes | null>(null);
   const [description, setDescription] = useState<DescriptionContent | null>(null);
@@ -22,15 +21,17 @@ export default function SummaryPage() {
     // Load all character data from localStorage
     const name = localStorage.getItem("characterName") || "Sin nombre";
     const classData = localStorage.getItem("selectedClass");
-    const raceString = localStorage.getItem("selectedRace") || "Sin raza";
-    const race:RaceResponse = JSON.parse(raceString);
+    const raceString = localStorage.getItem("selectedRace") || null;
+    if(raceString){
+      const race:RaceDetails = JSON.parse(raceString);
+      setSelectedRace(race);
+    }
     const bonus = localStorage.getItem("attributeBonus");
     const desc = localStorage.getItem("characterDescription");
     const tools = localStorage.getItem("selectedTools");
     const skills = localStorage.getItem("selectedSkills");
 
     setCharacterName(name);
-    setSelectedRace(race);
 
     if (classData) {
       const parsedClass: CharacterClass = JSON.parse(classData);
@@ -104,7 +105,7 @@ export default function SummaryPage() {
             </div>
             <div>
               <span className="text-gray-600 font-semibold">Raza:</span>
-              <p className="text-xl text-gray-800">{selectedRace?.name}</p>
+              <p className="text-xl text-gray-800">{selectedRace?.name ?? "Sin raza"}</p>
             </div>
           </div>
         </div>

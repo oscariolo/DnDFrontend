@@ -64,6 +64,10 @@ const allCharacters = [
 	},
 ];
 
+export function handleEditCharacter(char: typeof allCharacters[0]) {
+	
+}
+
 export default function CharactersPage() {
 	const [visibleCharacters, setVisibleCharacters] = useState(3);
 	const [noMore, setNoMore] = useState(false);
@@ -173,7 +177,7 @@ export default function CharactersPage() {
 						<p className="text-gray-200 mb-6 text-center max-w-xl">
 							Elige tu raza, clase y trasfondo. Forja un héroe único con habilidades y una historia personal.
 						</p>
-						<Link href="/characters/builder">
+						<Link href="/characters/builder/class">
 							<button className="mt-auto w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
 								Crear nuevo personaje
 							</button>
@@ -258,7 +262,7 @@ export default function CharactersPage() {
                     className="flex flex-col md:flex-row gap-4 mt-8 w-full static mb-6 md:absolute md:bottom-3 md:right-3 md:w-auto md:mt-0 items-center md:items-end justify-center md:justify-end"
                   >
                     <Link href="/characters/builder/">
-                      <button className="w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow text-center">
+                      <button onClick={()=>handleEditCharacter(char)} className="w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow text-center">
                         Editar personaje
                       </button>
                     </Link>

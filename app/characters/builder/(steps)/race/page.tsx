@@ -1,14 +1,15 @@
 "use client";
 
-import { getFullRaceData, RaceResponse } from "@/app/lib/services/characterServices";
+import { getFullRaceData} from "@/app/lib/services/characterServices";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import RaceModal from "./detailedRacePopup";
+import { RaceDetails } from "@/app/lib/models/charactermodel";
 
 interface RaceCardProps {
-  race: RaceResponse;
+  race: RaceDetails;
   onClick: () => void;
 }
 
@@ -37,9 +38,9 @@ function RaceCard({ race, onClick }: RaceCardProps) {
 }
 
 export default function RacePage() {
-  const [races, setRaces] = useState<RaceResponse[]>([]);
-  const [detailRace, setDetailRace] = useState<RaceResponse | null>(null);
-  const [selectedRace, setSelectedRace] = useState<RaceResponse | null>(null);
+  const [races, setRaces] = useState<RaceDetails[]>([]);
+  const [detailRace, setDetailRace] = useState<RaceDetails | null>(null);
+  const [selectedRace, setSelectedRace] = useState<RaceDetails | null>(null);
   const [showRaceList, setShowRaceList] = useState(true);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -53,7 +54,7 @@ export default function RacePage() {
         // Check if race was already selected
         const savedRaceLocal = localStorage.getItem('selectedRace');
         if (savedRaceLocal) {
-          const parsedRace: RaceResponse = JSON.parse(savedRaceLocal);
+          const parsedRace: RaceDetails = JSON.parse(savedRaceLocal);
           setSelectedRace(parsedRace);
           setShowRaceList(false);
         }

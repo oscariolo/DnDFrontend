@@ -3,16 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getListOfSkills, getListOfTools } from "@/app/lib/services/characterServices";
+import { StarterItem } from "@/app/lib/models/charactermodel";
 
-interface ItemData {
-  name: string;
-  description: string;
-}
 
 export default function BaseItemsPage() {
   const router = useRouter();
-  const [tools, setTools] = useState<ItemData[]>([]);
-  const [skills, setSkills] = useState<ItemData[]>([]);
+  const [tools, setTools] = useState<StarterItem[]>([]);
+  const [skills, setSkills] = useState<StarterItem[]>([]);
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
