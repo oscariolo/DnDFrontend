@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 
 const TABS = [
   { id: 'campaigns', label: 'Campaigns' },
@@ -24,19 +25,18 @@ export default function ProfilePage() {
     }
   }
 
-  useEffect(() => {
-  }, [active]);
+  useEffect(() => {}, [active]);
 
   return (
     <main className="min-h-screen px-6 py-12 bg-[#FEFEFC]">
       <div className="mx-auto max-w-5xl">
-        <h1 className="text-3xl font-semibold text-gray-900 mb-6">User&apos;s Profile</h1>
-        <div className="rounded-lg overflow-hidden" style={{ backgroundColor: '#F4F4F4' }}>
+        <h1 className="text-4xl font-semibold text-gray-900 mb-8">User&apos;s Profile</h1>
+        <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#F4F4F4' }}>
           <div
             role="tablist"
             aria-label="Profile tabs"
             onKeyDown={onKeyDown}
-            className="flex gap-2 p-3"
+            className="flex gap-4 p-6"
           >
             {TABS.map((tab, i) => {
               const isActive = active === tab.id;
@@ -46,14 +46,14 @@ export default function ProfilePage() {
                   role="tab"
                   aria-selected={isActive}
                   aria-controls={`panel-${tab.id}`}
-                  id={`tab-${tab.id}`}ref={(el) => { tabRefs.current[i] = el; }}
-                  
+                  id={`tab-${tab.id}`}
+                  ref={(el) => { tabRefs.current[i] = el; }}
                   onClick={() => setActive(tab.id)}
                   className={
-                    'px-4 py-2 rounded-md text-sm font-medium focus:outline-none transition ' +
+                    'px-8 py-4 rounded-lg text-lg font-semibold tracking-wide focus:outline-none transition ' +
                     (isActive
-                      ? 'bg-white text-black shadow-sm'
-                      : 'bg-transparent text-black hover:bg-white/40')
+                      ? 'bg-white text-black shadow-md'
+                      : 'bg-transparent text-black hover:bg-white/50')
                   }
                 >
                   {tab.label}
@@ -61,18 +61,23 @@ export default function ProfilePage() {
               );
             })}
           </div>
-          <div className="p-6">
+          <div className="p-8">
             <section
               id="panel-campaigns"
               role="tabpanel"
               aria-labelledby="tab-campaigns"
               hidden={active !== 'campaigns'}
-              className={`${active === 'campaigns' ? 'block' : 'hidden'}`}
+              className={active === 'campaigns' ? 'block' : 'hidden'}
             >
-              <div className="rounded-lg bg-white shadow-sm p-6">
-                <h2 className="text-xl font-semibold mb-3 text-black">Your Campaigns</h2>
-                <p className="text-black mb-4">No campaigns yet. Create and manage your campaigns here.</p>
-                <button className="inline-block px-4 py-2 bg-[#E40712] text-white rounded-md">Create Campaign</button>
+              <div className="rounded-xl bg-white shadow-md p-8">
+                <h2 className="text-2xl font-semibold mb-4 text-black">Your Campaigns</h2>
+                <p className="text-black mb-6 text-lg">No campaigns yet. Create and manage your campaigns here.</p>
+                <Link
+                  href="/campaign/builder"
+                  className="inline-block px-8 py-4 bg-[#E40712] hover:opacity-90 text-white text-lg font-bold rounded-lg shadow-lg"
+                >
+                  Create Campaign
+                </Link>
               </div>
             </section>
 
@@ -81,12 +86,17 @@ export default function ProfilePage() {
               role="tabpanel"
               aria-labelledby="tab-characters"
               hidden={active !== 'characters'}
-              className={`${active === 'characters' ? 'block' : 'hidden'}`}
+              className={active === 'characters' ? 'block' : 'hidden'}
             >
-              <div className="rounded-lg bg-white shadow-sm p-6">
-                <h2 className="text-xl font-semibold mb-3 text-black">Your Characters</h2>
-                <p className="text-black mb-4">No characters yet. Start creating heroes for your adventures.</p>
-                <button className="inline-block px-4 py-2 bg-[#E40712] text-white rounded-md">Create Character</button>
+              <div className="rounded-xl bg-white shadow-md p-8">
+                <h2 className="text-2xl font-semibold mb-4 text-black">Your Characters</h2>
+                <p className="text-black mb-6 text-lg">No characters yet. Start creating heroes for your adventures.</p>
+                <Link
+                  href="/characters/builder"
+                  className="inline-block px-8 py-4 bg-[#E40712] hover:opacity-90 text-white text-lg font-bold rounded-lg shadow-lg"
+                >
+                  Create Character
+                </Link>
               </div>
             </section>
           </div>

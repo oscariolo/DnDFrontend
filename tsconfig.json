@@ -20,7 +20,8 @@
     ],
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "typeRoots": ["./types", "./node_modules/@types"]   // 👈 AGREGADO
   },
   "include": [
     "next-env.d.ts",
@@ -28,7 +29,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
-, "app/shared/components/redirectCard.jsx"  ],
+    "**/*.mts",
+    "app/shared/components/redirectCard.jsx"
+  ],
   "exclude": ["node_modules"]
 }

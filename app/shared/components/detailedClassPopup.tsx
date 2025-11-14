@@ -64,7 +64,9 @@ export default function ClassModal({
         </div>
         <div className="flex-1">
           <h3 className="text-xl font-semibold text-gray-700 mb-2">Descripción</h3>
-          <p className="text-gray-600 leading-relaxed">{characterClass.description}</p>
+          <p className="text-gray-600 leading-relaxed mb-4">{characterClass.description}</p>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Historia</h3>
+          <p className="text-gray-600 leading-relaxed">{characterClass.backstory}</p>
         </div>
       </div>
       <div>

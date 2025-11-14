@@ -36,17 +36,17 @@ export default function Menu() {
   return (
     <div className="w-full bg-[#26282A]">
       <div className="max-w-screen-2xl mx-auto px-4">
-        <div className="flex items-center justify-between h-12">
+        <div className="flex items-center justify-between h-18">
           <button
             aria-label="Toggle menu"
             onClick={() => setOpen((v) => !v)}
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-white/6 focus:outline-none focus:ring-2 focus:ring-white/20"
+            className="md:hidden inline-flex items-center justify-center p-3 rounded-md text-white hover:bg:white/6 focus:outline-none focus:ring-2 focus:ring-white/20"
           >
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <nav className="hidden md:flex gap-6 items-center justify-center w-full" aria-label="Primary">
+          <nav className="hidden md:flex gap-8 items-center justify-center w-full" aria-label="Primary">
             {MENU_ITEMS.map((item) => {
               const active = isActive(item.href);
               return (
@@ -55,7 +55,7 @@ export default function Menu() {
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
                   className={
-                    `text-sm font-medium transition-colors duration-150 ` +
+                    `text-base md:text-lg font-semibold transition-colors duration-150 ` +
                     (active
                       ? 'text-white underline decoration-2 decoration-white/40'
                       : 'text-white hover:underline')
@@ -66,7 +66,7 @@ export default function Menu() {
               );
             })}
           </nav>
-          <div className="md:hidden w-6" />
+          <div className="md:hidden w-7" />
         </div>
       </div>
       <div
@@ -76,24 +76,24 @@ export default function Menu() {
       />
 
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-[#26282A] backdrop-blur-md z-50 transform transition-transform duration-300 md:hidden ${
+        className={`fixed top-0 left-0 h-full w-72 bg-[#26282A] backdrop-blur-md z-50 transform transition-transform duration-300 md:hidden ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
         aria-hidden={!open}
       >
-        <div className="h-12 flex items-center px-4">
+        <div className="h-16 flex items-center px-4">
           <button
             aria-label="Close menu"
             onClick={() => setOpen(false)}
-            className="p-2 rounded-md text-white hover:bg-white/6 focus:outline-none"
+            className="p-3 rounded-md text-white hover:bg-white/6 focus:outline-none"
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
         </div>
 
-        <nav className="px-4 mt-4 flex flex-col gap-3" aria-label="Mobile">
+        <nav className="px-4 mt-2 flex flex-col gap-2.5" aria-label="Mobile">
           {MENU_ITEMS.map((item) => {
             const active = isActive(item.href);
             return (
@@ -103,7 +103,7 @@ export default function Menu() {
                 onClick={() => setOpen(false)}
                 aria-current={active ? 'page' : undefined}
                 className={
-                  `px-3 py-2 rounded-md transition-colors duration-150 ` +
+                  `px-4 py-3 rounded-md text-lg font-semibold transition-colors duration-150 ` +
                   (active ? 'bg-white/6 text-white' : 'text-white hover:bg-white/6')
                 }
               >

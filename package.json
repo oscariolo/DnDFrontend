@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@apollo/client": "^4.0.9",
+    "@splidejs/react-splide": "^0.7.12",
     "graphql": "^16.12.0",
     "lucide-react": "^0.553.0",
     "next": "16.0.1",

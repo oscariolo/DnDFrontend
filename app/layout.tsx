@@ -20,7 +20,6 @@ export default function RootLayout({
         className={`${tiamatFont.variable} antialiased`}
         style={{ backgroundColor: "#fefcfb", minHeight: "100vh", margin: 0, display: "flex", flexDirection: "column" }}
       >
-        {/* Top header: logo left, icons right */}
         <header style={{
           display: 'flex',
           alignItems: 'center',
