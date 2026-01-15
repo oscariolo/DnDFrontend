@@ -12,11 +12,15 @@ interface Zone {
   images: File[];
 }
 
+const MAX_IMAGE_SIZE_MB = 5; // Tamaño máximo por imagen en MB
+const MAX_TOTAL_IMAGE_SIZE_MB = 20; // Tamaño máximo total en MB
+
 export default function ZoneCreationPage() {
   const router = useRouter();
   const [zones, setZones] = useState<Zone[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [currentZone, setCurrentZone] = useState({
     name: "",
     description: "",
@@ -40,9 +44,18 @@ export default function ZoneCreationPage() {
     if (!files) return;
 
     const fileArray = Array.from(files);
+    const validFiles: File[] = [];
+    for (const file of fileArray) {
+      if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+        alert(`La imagen "${file.name}" supera el tamaño máximo de ${MAX_IMAGE_SIZE_MB}MB.`);
+      } else {
+        validFiles.push(file);
+      }
+    }
+
     setCurrentZone((prev) => ({
       ...prev,
-      images: [...prev.images, ...fileArray],
+      images: [...prev.images, ...validFiles],
     }));
   };
 
@@ -112,15 +125,33 @@ export default function ZoneCreationPage() {
   };
 
   const handleContinue = async () => {
+    if (isLoading) return; // Evita envíos múltiples
+
     if (zones.length === 0) {
       alert("Por favor crea al menos una zona para la campaña");
       return;
     }
 
+    // Sumar el tamaño total de todas las imágenes de todas las zonas
+    let totalSize = 0;
+    zones.forEach(zone => {
+      zone.images.forEach(file => {
+        totalSize += file.size;
+      });
+    });
+
+    if (totalSize > MAX_TOTAL_IMAGE_SIZE_MB * 1024 * 1024) {
+      alert(`El tamaño total de las imágenes supera el máximo permitido de ${MAX_TOTAL_IMAGE_SIZE_MB}MB.`);
+      return;
+    }
+
+    setIsLoading(true); // Muestra el loader
+
     try {
       const savedBasicInfo = localStorage.getItem("campaignBasicInfo");
       if (!savedBasicInfo) {
         alert("No se encontró la información básica de la campaña");
+        setIsLoading(false);
         return;
       }
 
@@ -171,6 +202,8 @@ export default function ZoneCreationPage() {
     } catch (error) {
       alert("Error al crear la campaña. Intenta de nuevo.");
       console.error(error);
+    } finally {
+      setIsLoading(false); // Oculta el loader
     }
   };
 
@@ -332,16 +365,21 @@ export default function ZoneCreationPage() {
           </div>
         )}
 
-        {zones.length > 0 && (
-          <div className="flex justify-center">
-            <button
-              onClick={handleContinue}
-              className="px-8 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition-colors text-lg shadow-lg"
-            >
-              Finalizar Campaña
-            </button>
+        {isLoading && (
+          <div className="flex justify-center mb-4">
+            <span className="text-amber-700 font-semibold animate-pulse">Procesando campaña...</span>
           </div>
         )}
+
+        <div className="flex justify-center">
+          <button
+            onClick={handleContinue}
+            className="px-8 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition-colors text-lg shadow-lg"
+            disabled={isLoading}
+          >
+            {isLoading ? "Enviando..." : "Finalizar Campaña"}
+          </button>
+        </div>
       </div>
     </div>
   );

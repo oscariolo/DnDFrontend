@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { uploadCampaign } from "@/app/lib/services/campaingServices";
 
 interface CampaignBasicInfo {
   name: string;

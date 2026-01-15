@@ -1,21 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { getAllCampaigns } from "../lib/services/campaingServices";
 
-// Datos ficticios de campañas
-const campaigns = [
-  { id: 1, img:"/images/campaign1.jpg", title: "Campaign One", description: "Description for Campaign One" },
-  { id: 2, img:"/images/campaign1.jpg", title: "Campaign Two", description: "Description for Campaign Two" },
-  { id: 3, img:"/images/campaign1.jpg", title: "Campaign Three", description: "Description for Campaign Three" },
-  { id: 4, img:"/images/campaign1.jpg", title: "Campaign Four", description: "Description for Campaign Four" },
-  { id: 5, img:"/images/campaign1.jpg", title: "Campaign Five", description: "Description for Campaign Five" },
-];
+const DEFAULT_IMG = "/images/campaign1.jpg";
 
 export default function CampaignPage() {
+  const [communityCampaigns, setCommunityCampaigns] = useState<any[]>([]);
+  const router = useRouter();
   const createCampRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    getAllCampaigns().then(setCommunityCampaigns).catch(() => setCommunityCampaigns([]));
+  }, []);
 
   const fantasyGradientText = "bg-clip-text text-transparent bg-gradient-to-r from-black via-gray-900 to-black";
 
@@ -63,6 +64,27 @@ export default function CampaignPage() {
       const walk = (x - startX) * 1.5; // velocidad de arrastre
       carousel.scrollLeft = scrollLeft - walk;
     }
+  };
+
+  const handleUseCampaign = (campaign: any) => {
+    // Prepara los datos para el flujo de creación
+    const basicInfo = {
+      name: campaign.name,
+      description: campaign.description,
+      numberOfPlayers: campaign.maxPlayers,
+    };
+    // Guarda en localStorage
+    localStorage.setItem("campaignBasicInfo", JSON.stringify(basicInfo));
+    localStorage.setItem("campaignZones", JSON.stringify(
+      campaign.campaignZones?.map((zone: any, idx: number) => ({
+        id: `${Date.now()}_${idx}`, // id único
+        name: zone.zoneName,
+        description: zone.description,
+        images: [],
+      })) || []
+    ));
+    // Redirige al flujo de creación
+    router.push("/campaign/builder/basicInfo");
   };
 
   return (
@@ -131,22 +153,35 @@ export default function CampaignPage() {
               onMouseUp={handleMouseUp}
               onMouseMove={handleMouseMove}
             >
-              {campaigns.map((c) => (
-                <div key={c.id} className="shrink-0 w-80 bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-xl font-bold mb-2 text-white">{c.title}</h3>
-                    <div className="relative h-32 bg-gray-700 rounded-md mb-4 flex items-center justify-center text-gray-500">
-                      <Image fill src={c.img} alt={c.title} className="rounded-t-xl h-32 object-cover" />
+              {communityCampaigns.map((c) => {
+                // Busca la primera imagen de cualquier zona
+                let img = DEFAULT_IMG;
+                for (const zone of c.campaignZones || []) {
+                  if (zone.zoneImgUrls && zone.zoneImgUrls.length > 0) {
+                    img = zone.zoneImgUrls[0];
+                    break;
+                  }
+                }
+                return (
+                  <div key={c.id} className="shrink-0 w-80 bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold mb-2 text-white">{c.name}</h3>
+                      <div className="relative h-32 bg-gray-700 rounded-md mb-4 flex items-center justify-center text-gray-500">
+                        <Image fill src={img} alt={c.name} className="rounded-t-xl h-32 object-cover" />
+                      </div>
+                      <p className="text-sm text-gray-400 mb-4">{c.description.length > 120 
+                      ? c.description.substring(0, 120) + "..." 
+                      : c.description}</p>
                     </div>
-                    <p className="text-sm text-gray-400 mb-4">{c.description}</p>
+                    <button
+                      className="mt-4 w-full bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow"
+                      onClick={() => handleUseCampaign(c)}
+                    >
+                      Usar campaña
+                    </button>
                   </div>
-                  <button
-                    className="mt-4 w-full bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow"
-                  >
-                    Usar campaña
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
