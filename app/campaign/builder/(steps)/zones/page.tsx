@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { uploadCampaign } from "@/app/lib/services/campaingServices";
 
 interface Zone {
   id: string;
   name: string;
   description: string;
-  images: string[];
+  images: File[];
 }
 
 export default function ZoneCreationPage() {
@@ -19,14 +20,18 @@ export default function ZoneCreationPage() {
   const [currentZone, setCurrentZone] = useState({
     name: "",
     description: "",
-    images: [] as string[],
+    images: [] as File[],
   });
 
   useEffect(() => {
-    // Load saved zones from localStorage
     const savedZones = localStorage.getItem("campaignZones");
     if (savedZones) {
-      setZones(JSON.parse(savedZones));
+      // Solo recupera los datos básicos y deja images vacío
+      const parsed = JSON.parse(savedZones).map((zone: any) => ({
+        ...zone,
+        images: [],
+      }));
+      setZones(parsed);
     }
   }, []);
 
@@ -34,16 +39,11 @@ export default function ZoneCreationPage() {
     const files = e.target.files;
     if (!files) return;
 
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCurrentZone((prev) => ({
-          ...prev,
-          images: [...prev.images, reader.result as string],
-        }));
-      };
-      reader.readAsDataURL(file);
-    });
+    const fileArray = Array.from(files);
+    setCurrentZone((prev) => ({
+      ...prev,
+      images: [...prev.images, ...fileArray],
+    }));
   };
 
   const removeImage = (index: number) => {
@@ -67,7 +67,6 @@ export default function ZoneCreationPage() {
     let updatedZones: Zone[];
 
     if (editingZoneId) {
-      // Update existing zone
       updatedZones = zones.map((zone) =>
         zone.id === editingZoneId
           ? { ...zone, name: currentZone.name, description: currentZone.description, images: currentZone.images }
@@ -75,7 +74,6 @@ export default function ZoneCreationPage() {
       );
       setEditingZoneId(null);
     } else {
-      // Create new zone
       const newZone: Zone = {
         id: Date.now().toString(),
         name: currentZone.name,
@@ -86,9 +84,13 @@ export default function ZoneCreationPage() {
     }
 
     setZones(updatedZones);
-    localStorage.setItem("campaignZones", JSON.stringify(updatedZones));
+    localStorage.setItem(
+      "campaignZones", 
+      JSON.stringify(
+        updatedZones.map(({ id, name, description }) => ({ id, name, description }))
+      )
+    );
 
-    // Reset form
     setCurrentZone({ name: "", description: "", images: [] });
     setIsCreating(false);
   };
@@ -97,7 +99,7 @@ export default function ZoneCreationPage() {
     setCurrentZone({
       name: zone.name,
       description: zone.description,
-      images: zone.images,
+      images: zone.images, 
     });
     setEditingZoneId(zone.id);
     setIsCreating(true);
@@ -109,12 +111,67 @@ export default function ZoneCreationPage() {
     localStorage.setItem("campaignZones", JSON.stringify(updatedZones));
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (zones.length === 0) {
       alert("Por favor crea al menos una zona para la campaña");
       return;
     }
-    router.push("/campaign");
+
+    try {
+      const savedBasicInfo = localStorage.getItem("campaignBasicInfo");
+      if (!savedBasicInfo) {
+        alert("No se encontró la información básica de la campaña");
+        return;
+      }
+
+      const basicInfo = JSON.parse(savedBasicInfo);
+
+      const formattedZones = [];
+      const allFiles: File[] = [];
+      let imageCounter = 0;
+
+      for (const zone of zones) {
+        const zoneImages = [];
+
+        for (const file of zone.images) {
+          const filename = `image_${imageCounter}.png`;
+          // Renombra el archivo para el backend si lo deseas
+          const renamedFile = new File([file], filename, { type: file.type });
+          allFiles.push(renamedFile);
+
+          zoneImages.push({
+            fileNameReference: filename,
+          });
+
+          imageCounter++;
+        }
+
+        formattedZones.push({
+          zoneName: zone.name,
+          description: zone.description,
+          images: zoneImages,
+        });
+      }
+
+      const campaignData = {
+        dungeonMasterId: "user-hardcoded-001",
+        name: basicInfo.name,
+        description: basicInfo.description,
+        maxPlayers: basicInfo.numberOfPlayers,
+        zones: formattedZones,
+      };
+
+      await uploadCampaign(campaignData, allFiles);
+
+      localStorage.removeItem("campaignBasicInfo");
+      localStorage.removeItem("campaignZones");
+
+      alert("¡Campaña creada exitosamente!");
+      router.push("/campaign");
+    } catch (error) {
+      alert("Error al crear la campaña. Intenta de nuevo.");
+      console.error(error);
+    }
   };
 
   return (
@@ -127,7 +184,6 @@ export default function ZoneCreationPage() {
           Crea las diferentes zonas o ubicaciones de tu campaña
         </p>
 
-        {/* Create Zone Button */}
         {!isCreating && (
           <div className="flex justify-center mb-8">
             <button
@@ -142,14 +198,12 @@ export default function ZoneCreationPage() {
           </div>
         )}
 
-        {/* Zone Creation Form */}
         {isCreating && (
           <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               {editingZoneId ? "Editar Zona" : "Nueva Zona"}
             </h2>
-            
-            {/* Zone Name */}
+
             <div className="mb-4">
               <label htmlFor="zoneName" className="block text-lg font-semibold mb-2 text-gray-800">
                 Nombre de la Zona
@@ -164,7 +218,6 @@ export default function ZoneCreationPage() {
               />
             </div>
 
-            {/* Zone Description */}
             <div className="mb-4">
               <label htmlFor="zoneDescription" className="block text-lg font-semibold mb-2 text-gray-800">
                 Descripción
@@ -179,7 +232,6 @@ export default function ZoneCreationPage() {
               />
             </div>
 
-            {/* Image Upload */}
             <div className="mb-4">
               <label className="block text-lg font-semibold mb-2 text-gray-800">
                 Imágenes
@@ -191,15 +243,14 @@ export default function ZoneCreationPage() {
                 onChange={handleImageUpload}
                 className="w-full p-3 border border-gray-300 rounded-lg text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-amber-100 file:text-amber-700 hover:file:bg-amber-200"
               />
-              
-              {/* Image Preview */}
+
               {currentZone.images.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                  {currentZone.images.map((img, index) => (
+                  {currentZone.images.map((file, index) => (
                     <div key={index} className="relative group">
                       <div className="relative w-full h-32 rounded-lg overflow-hidden border-2 border-gray-300">
                         <Image
-                          src={img}
+                          src={URL.createObjectURL(file)}
                           alt={`Zone image ${index + 1}`}
                           fill
                           className="object-cover"
@@ -217,7 +268,6 @@ export default function ZoneCreationPage() {
               )}
             </div>
 
-            {/* Action Buttons */}
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => {
@@ -239,7 +289,6 @@ export default function ZoneCreationPage() {
           </div>
         )}
 
-        {/* Zones List */}
         {zones.length > 0 && (
           <div className="space-y-4 mb-8">
             <h2 className="text-2xl font-bold text-gray-800">Zonas Creadas ({zones.length})</h2>
@@ -263,13 +312,13 @@ export default function ZoneCreationPage() {
                   </div>
                 </div>
                 <p className="text-gray-700 mb-4">{zone.description}</p>
-                
+
                 {zone.images.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {zone.images.map((img, index) => (
+                    {zone.images.map((file, index) => (
                       <div key={index} className="relative w-full h-32 rounded-lg overflow-hidden border-2 border-gray-300">
                         <Image
-                          src={img}
+                          src={URL.createObjectURL(file)}
                           alt={`${zone.name} image ${index + 1}`}
                           fill
                           className="object-cover"
@@ -283,7 +332,6 @@ export default function ZoneCreationPage() {
           </div>
         )}
 
-        {/* Continue Button */}
         {zones.length > 0 && (
           <div className="flex justify-center">
             <button

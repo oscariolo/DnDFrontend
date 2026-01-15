@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { uploadCampaign } from "@/app/lib/services/campaingServices";
 
 interface CampaignBasicInfo {
   name: string;
@@ -31,7 +32,7 @@ export default function BasicInfoPage() {
     localStorage.setItem("campaignBasicInfo", JSON.stringify(updatedData));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.name.trim()) {
@@ -49,6 +50,7 @@ export default function BasicInfoPage() {
       return;
     }
 
+    // Solo navegamos al siguiente paso, NO enviamos al backend aún
     router.push("/campaign/builder/zones");
   };
 
