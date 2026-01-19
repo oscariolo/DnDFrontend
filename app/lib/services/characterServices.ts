@@ -140,3 +140,27 @@ export async function getListOfTools(): Promise<queryResponse[]> {
         throw new Error("Failed to fetch tools");
     } 
 }
+
+export async function createCharacter(characterData: any) {
+  const res = await fetch('http://localhost:8080/api/characters', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(characterData),
+  });
+  if (!res.ok) throw new Error('Error al crear personaje');
+  return res.json();
+}
+
+export async function getAllCharacters() {
+  const res = await fetch('http://localhost:8080/api/characters');
+  if (!res.ok) throw new Error('Error al obtener personajes');
+  return res.json();
+}
+
+export async function getAllPlayableCharacters() {
+  const res = await fetch('http://localhost:8080/api/characters/playable');
+  if (!res.ok) throw new Error('Error al obtener jugadores jugables');
+  return res.json();
+}

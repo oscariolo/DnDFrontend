@@ -11,6 +11,7 @@ const allCharacters = [
 	{
 		id: 1,
 		name: "Sir Galahad",
+		creatorName: "UsuarioEjemplo",
 		story: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla vitae elit mauris. Nunc lacus sem, lobortis ac elit at, lacinia sollicitudin sapien. Vestibulum dui sapien, congue non viverra a, semper quis mi. Fusce eu felis lorem. Suspendisse ac elementum felis, eu sodales justo. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Mauris venenatis, arcu sit amet iaculis lobortis, lorem augue elementum elit, a fringilla neque ante egestas ante. Aliquam ornare lobortis venenatis. Pellentesque ac odio nisl. Donec nec aliquet nulla, a pretium dolor. Etiam ut pellentesque dolor, et convallis magna. Vivamus sollicitudin, felis non egestas posuere, felis libero varius magna, eu luctus mauris massa sed erat. Donec nec eleifend urna. Quisque dignissim cursus arcu eu aliquam.",
 		attributes: [
 			{ label: "Robustez", value: 14 },
@@ -266,7 +267,7 @@ export default function CharactersPage() {
                     priority={false}
                   />
                   {/* Imagen del personaje */}
-                  <div className="absolute inset-9   rounded-full overflow-hidden z-20 bg-gray-800 flex items-center justify-center">
+                  <div className="absolute inset-9 rounded-full overflow-hidden z-20 bg-gray-800 flex items-center justify-center">
                     <Image
                       src={char.img}
                       alt={char.name}
@@ -274,6 +275,12 @@ export default function CharactersPage() {
                       className="object-cover"
                       priority={false}
                     />
+                  </div>
+                  {/* Nombre del usuario creador */}
+                  <div className="absolute left-1/2 -translate-x-1/2 -bottom-8 w-full text-center z-30">
+                    <span className="text-lg text-gray-300 font-semibold drop-shadow">
+                      @{char.creatorName ?? "Usuario Anónimo"}
+                    </span>
                   </div>
                 </div>
                 {/* Info */}
