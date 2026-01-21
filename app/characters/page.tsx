@@ -150,6 +150,16 @@ export default function CharactersPage() {
 		// eslint-disable-next-line
 	}, [visibleCharacters]);
 
+	useEffect(() => {
+		if (typeof window !== "undefined" && window.location.hash === "#destacados") {
+			const el = document.getElementById("destacados");
+			if (el) {
+			const y = el.getBoundingClientRect().top + window.scrollY - 120; // Ajusta -120 según lo que necesites
+			window.scrollTo({ top: y, behavior: "smooth" });
+			}
+		}
+	}, []);
+
 	const fantasyGradientText =
 		"bg-clip-text text-transparent bg-gradient-to-r from-black via-gray-900 to-black";
 
@@ -174,7 +184,7 @@ export default function CharactersPage() {
 	};
 
 	return (
-		<main className="min-h-screen bg-[url('/images/background-bone.png')] px-2 md:px-0 pb-16 overflow-x-hidden">
+		<main className="min-h-screen px-2 md:px-0 pb-16 overflow-x-hidden">
       				{/* Header */}
 				<header className="text-center mb-16 py-12">
 					<h1
@@ -229,6 +239,7 @@ export default function CharactersPage() {
 				{/* Personajes Destacados */}
 				<section className="mb-20">
 					<h2
+						id ="destacados"
 						className={`text-5xl font-bold mb-10 text-center ${fantasyGradientText}`}
 					>
 						Personajes Destacados

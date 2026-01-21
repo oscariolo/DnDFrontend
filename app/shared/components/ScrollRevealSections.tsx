@@ -155,7 +155,7 @@ export default function ScrollRevealSections() {
             Empezar aventura
           </h2>
           <Link
-            href="/play"
+            href="/my-campaigns"
             className="inline-block bg-[#E40712] hover:opacity-90 text-white font-extrabold px-16 py-8 rounded-3xl shadow-2xl text-3xl md:text-5xl tracking-wide"
           >
             Empezar aventura

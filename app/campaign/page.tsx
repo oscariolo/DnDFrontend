@@ -24,7 +24,7 @@ export default function CampaignPage() {
     createCampRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     createCampRef.current?.classList.add('ring-4', "ring-fuchsia-500", "scale-105");
     setTimeout(() => {
-      createCampRef.current?.classList.remove('ring-4', "ring-fuchsia-500", "scale-105");
+    createCampRef.current?.classList.remove('ring-4', "ring-fuchsia-500", "scale-105");
     }, 1000);
   };
 
@@ -88,7 +88,7 @@ export default function CampaignPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[url('/images/background-bone.png')] px-2 md:px-0 pb-4 overflow-x-hidden">
+    <main className="min-h-screen px-2 md:px-0 pb-4 overflow-x-hidden">
       {/* Header */}
       <header className="text-center mb-10 py-5">
         <h1 className={`text-4xl md:text-6xl font-extrabold mb-4 ${fantasyGradientText}`}>Campañas Populares</h1>
@@ -111,7 +111,7 @@ export default function CampaignPage() {
             <div className="relative w-80 h-96 flex items-center justify-center">
               <div className="absolute inset-0 flex items-center justify-center z-10">
                 <Image
-                  src="/campaign1.png"
+                  src="/images/campaign1.jpg"
                   alt="Campaign"
                   fill
                   className="object-cover absolute inset-0 rounded-lg opacity-50"
@@ -167,7 +167,10 @@ export default function CampaignPage() {
                     <div>
                       <h3 className="text-xl font-bold mb-2 text-white">{c.name}</h3>
                       <div className="relative h-32 bg-gray-700 rounded-md mb-4 flex items-center justify-center text-gray-500">
-                        <Image fill src={img} alt={c.name} className="rounded-t-xl h-32 object-cover" />
+                        <Image fill 
+                        src={img} 
+                        alt={c.name} 
+                        className="rounded-t-xl h-32 object-cover" />
                       </div>
                       <p className="text-sm text-gray-400 mb-4">{c.description.length > 120 
                       ? c.description.substring(0, 120) + "..." 

@@ -15,12 +15,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body
         className={`${tiamatFont.variable} antialiased`}
         style={{ backgroundColor: "#fefcfb", minHeight: "100vh", margin: 0, display: "flex", flexDirection: "column" }}
       >
-        <header style={{
+        {/* Fondo papel */}
+        <div className="fixed inset-0 z-0 pointer-events-none"
+         style={{ 
+          backgroundImage: "url('/images/background-bone.jpg')",
+          backgroundRepeat: "repeat",
+        }}/>
+        {/* Header */}
+        <header className="relative z-10"
+        style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -60,15 +68,15 @@ export default function RootLayout({
         </header>
 
         {/* Menu */}
-        <Menu />
+        <Menu className="relative z-10"/>
 
         {/* Main content (flex: 1 to push footer down) */}
-        <main style={{ flex: 1 }}>
+        <main className="relative z-10" style={{ flex: 1 }}>
           {children}
         </main>
 
         {/* Footer */}
-        <footer className="w-full bg-[#0d0d0d] text-gray-400 py-16">
+        <footer className="relative z-10 w-full bg-[#0d0d0d] text-gray-400 py-16">
           {/* Main footer content */}
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-12">
