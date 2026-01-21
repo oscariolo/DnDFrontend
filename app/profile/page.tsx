@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/app/lib/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 const TABS = [
   { id: 'campaigns', label: 'Campañas' },
@@ -9,8 +11,33 @@ const TABS = [
 ];
 
 export default function ProfilePage() {
+  const { user, isLoading, isAuthenticated, logout } = useAuth();
+  const router = useRouter();
   const [active, setActive] = useState<string>(TABS[0].id);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/auth');
+    }
+  }, [isLoading, isAuthenticated, router]);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/auth');
+  };
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-gray-600">Loading...</div>
+      </main>
+    );
+  }
+
+  if (!isAuthenticated || !user) {
+    return null;
+  }
 
   function onKeyDown(e: React.KeyboardEvent) {
     const idx = TABS.findIndex((t) => t.id === active);
@@ -25,12 +52,21 @@ export default function ProfilePage() {
     }
   }
 
-  useEffect(() => {}, [active]);
-
   return (
     <main className="min-h-screen px-6 py-12 bg-[#FEFEFC]">
       <div className="mx-auto max-w-5xl">
-        <h1 className="text-4xl font-semibold text-gray-900 mb-8">User&apos;s Profile</h1>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-semibold text-gray-900">Welcome, {user.firstName}!</h1>
+            <p className="text-gray-600 mt-2">@{user.username}</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="px-6 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
+          >
+            Logout
+          </button>
+        </div>
         <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#F4F4F4' }}>
           <div
             role="tablist"

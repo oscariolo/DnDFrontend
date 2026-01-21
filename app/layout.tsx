@@ -3,6 +3,7 @@ import './globals.css';
 import { tiamatFont } from './ui/fonts';
 import Link from 'next/link';
 import Menu from './shared/components/Menu';
+import { AuthProvider } from './lib/context/AuthContext';
 
 export const metadata: Metadata = {
   title: "DnD Maker",
@@ -20,7 +21,8 @@ export default function RootLayout({
         className={`${tiamatFont.variable} antialiased`}
         style={{ backgroundColor: "#fefcfb", minHeight: "100vh", margin: 0, display: "flex", flexDirection: "column" }}
       >
-        <header style={{
+        <AuthProvider>
+          <header style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -59,20 +61,15 @@ export default function RootLayout({
           </nav>
         </header>
 
-        {/* Menu */}
         <Menu />
 
-        {/* Main content (flex: 1 to push footer down) */}
         <main style={{ flex: 1 }}>
           {children}
         </main>
 
-        {/* Footer */}
         <footer className="w-full bg-[#0d0d0d] text-gray-400 py-16">
-          {/* Main footer content */}
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-12">
-              {/* Left column: Logo & Support */}
               <div className="md:col-span-1">
                 <div className="mb-8">
                   <img src="/images/logo.png" alt="D&D Maker Logo" style={{ width: 120, height: 120, marginBottom: 16 }} />
@@ -100,7 +97,6 @@ export default function RootLayout({
                 </nav>
               </div>
 
-              {/* Middle-left column: About */}
               <div className="md:col-span-1">
                 <h3 className="text-xs uppercase font-semibold text-white tracking-widest mb-6">About</h3>
                 <nav className="flex flex-col gap-4 text-sm">
@@ -116,11 +112,9 @@ export default function RootLayout({
                 </nav>
               </div>
 
-              {/* Middle-right column: Social Media */}
               <div className="md:col-span-1">
                 <h3 className="text-xs uppercase font-semibold text-white tracking-widest mb-6">Find Us On Social Media</h3>
                 <div className="flex gap-5">
-                  {/* YouTube */}
                   <a
                     href="https://youtube.com"
                     target="_blank"
@@ -133,7 +127,6 @@ export default function RootLayout({
                     </svg>
                   </a>
 
-                  {/* Instagram */}
                   <a
                     href="https://instagram.com"
                     target="_blank"
@@ -148,7 +141,6 @@ export default function RootLayout({
                     </svg>
                   </a>
 
-                  {/* Facebook */}
                   <a
                     href="https://facebook.com"
                     target="_blank"
@@ -161,7 +153,6 @@ export default function RootLayout({
                     </svg>
                   </a>
 
-                  {/* Twitch */}
                   <a
                     href="https://twitch.tv"
                     target="_blank"
@@ -175,7 +166,6 @@ export default function RootLayout({
                     </svg>
                   </a>
 
-                  {/* X (Twitter) */}
                   <a
                     href="https://twitter.com"
                     target="_blank"
@@ -190,11 +180,9 @@ export default function RootLayout({
                 </div>
               </div>
 
-              {/* Right column: Download App */}
               <div className="md:col-span-2">
                 <h3 className="text-xs uppercase font-semibold text-white tracking-widest mb-6">Download the D&D Beyond App</h3>
                 <div className="flex flex-col gap-4">
-                  {/* Google Play Button */}
                   <a
                     href="https://play.google.com/store"
                     target="_blank"
@@ -210,7 +198,6 @@ export default function RootLayout({
                     </div>
                   </a>
 
-                  {/* App Store Button */}
                   <a
                     href="https://apps.apple.com"
                     target="_blank"
@@ -229,12 +216,9 @@ export default function RootLayout({
               </div>
             </div>
 
-            {/* Divider */}
             <div className="border-t border-gray-700 my-8"></div>
 
-            {/* Bottom section */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              {/* Left: Copyright */}
               <div className="flex-1">
                 <p className="text-xs text-gray-500 text-center md:text-left mb-3">
                   © 2017–2025 Wizards of the Coast LLC | All Rights Reserved
@@ -244,7 +228,6 @@ export default function RootLayout({
                 </p>
               </div>
 
-              {/* Right: Legal links & ESRB */}
               <div className="flex items-center gap-6 md:flex-col lg:flex-row">
                 <div className="flex gap-4 text-xs">
                   <Link href="/privacy-policy" className="text-gray-400 hover:text-white hover:underline transition uppercase font-semibold">
@@ -255,7 +238,6 @@ export default function RootLayout({
                     Terms of Service
                   </Link>
                 </div>
-                {/* ESRB Rating */}
                 <div className="flex items-center justify-center bg-white p-1 rounded">
                   <span className="text-xs font-bold text-black">T</span>
                 </div>
@@ -263,6 +245,7 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
+        </AuthProvider>
       </body>
     </html>
   );
