@@ -8,10 +8,10 @@ const MENU_ITEMS = [
   { href: '/clases', label: 'Clases' }, 
   { href: '/campaign', label: 'Campañas' },
   { href: '/characters', label: 'Personajes' },
-  { href: '/play', label: 'Jugar' },
+  { href: '/my-campaigns', label: 'Jugar' },
 ];
 
-export default function Menu() {
+export default function Menu({ className = '' }: { className?: string }) {
   const [open, setOpen] = useState<boolean>(() => {
     try {
       return typeof window !== 'undefined' && localStorage.getItem('menuOpen') === 'true';
@@ -34,7 +34,7 @@ export default function Menu() {
   };
 
   return (
-    <div className="w-full bg-[#26282A]">
+    <div className={`w-full bg-[#26282A] ${className}`}>
       <div className="max-w-screen-2xl mx-auto px-4">
         <div className="flex items-center justify-between h-18">
           <button

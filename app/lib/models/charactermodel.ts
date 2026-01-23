@@ -10,6 +10,7 @@ export interface CustomCharacter{
     skills: StarterItem[];
     imgsrc?: string;
     startItems?: StarterItem[];
+    avatarFile?: string; // base64 temporal para previsualización
 }
 
 export interface DescriptionContent{

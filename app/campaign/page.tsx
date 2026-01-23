@@ -1,21 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { getAllCampaigns } from "../lib/services/campaingServices";
 
-// Datos ficticios de campañas
-const campaigns = [
-  { id: 1, img:"/images/campaign1.jpg", title: "Campaign One", description: "Description for Campaign One" },
-  { id: 2, img:"/images/campaign1.jpg", title: "Campaign Two", description: "Description for Campaign Two" },
-  { id: 3, img:"/images/campaign1.jpg", title: "Campaign Three", description: "Description for Campaign Three" },
-  { id: 4, img:"/images/campaign1.jpg", title: "Campaign Four", description: "Description for Campaign Four" },
-  { id: 5, img:"/images/campaign1.jpg", title: "Campaign Five", description: "Description for Campaign Five" },
-];
+const DEFAULT_IMG = "/images/campaign1.jpg";
 
 export default function CampaignPage() {
+  const [communityCampaigns, setCommunityCampaigns] = useState<any[]>([]);
+  const router = useRouter();
   const createCampRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    getAllCampaigns().then(setCommunityCampaigns).catch(() => setCommunityCampaigns([]));
+  }, []);
 
   const fantasyGradientText = "bg-clip-text text-transparent bg-gradient-to-r from-black via-gray-900 to-black";
 
@@ -23,7 +24,7 @@ export default function CampaignPage() {
     createCampRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     createCampRef.current?.classList.add('ring-4', "ring-fuchsia-500", "scale-105");
     setTimeout(() => {
-      createCampRef.current?.classList.remove('ring-4', "ring-fuchsia-500", "scale-105");
+    createCampRef.current?.classList.remove('ring-4', "ring-fuchsia-500", "scale-105");
     }, 1000);
   };
 
@@ -65,8 +66,29 @@ export default function CampaignPage() {
     }
   };
 
+  const handleUseCampaign = (campaign: any) => {
+    // Prepara los datos para el flujo de creación
+    const basicInfo = {
+      name: campaign.name,
+      description: campaign.description,
+      numberOfPlayers: campaign.maxPlayers,
+    };
+    // Guarda en localStorage
+    localStorage.setItem("campaignBasicInfo", JSON.stringify(basicInfo));
+    localStorage.setItem("campaignZones", JSON.stringify(
+      campaign.campaignZones?.map((zone: any, idx: number) => ({
+        id: `${Date.now()}_${idx}`, // id único
+        name: zone.zoneName,
+        description: zone.description,
+        images: [],
+      })) || []
+    ));
+    // Redirige al flujo de creación
+    router.push("/campaign/builder/basicInfo");
+  };
+
   return (
-    <main className="min-h-screen bg-[url('/images/background-bone.png')] px-2 md:px-0 pb-4 overflow-x-hidden">
+    <main className="min-h-screen px-2 md:px-0 pb-4 overflow-x-hidden">
       {/* Header */}
       <header className="text-center mb-10 py-5">
         <h1 className={`text-4xl md:text-6xl font-extrabold mb-4 ${fantasyGradientText}`}>Campañas Populares</h1>
@@ -85,18 +107,6 @@ export default function CampaignPage() {
             className="object-cover absolute inset-0 w-full h-full"
             priority
           />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative w-80 h-96 flex items-center justify-center">
-              <div className="absolute inset-0 flex items-center justify-center z-10">
-                <Image
-                  src="/campaign1.png"
-                  alt="Campaign"
-                  fill
-                  className="object-cover absolute inset-0 rounded-lg opacity-50"
-                />
-              </div>
-            </div>
-          </div>
           {/* Contenido */}
           <div
             ref={createCampRef}
@@ -131,22 +141,38 @@ export default function CampaignPage() {
               onMouseUp={handleMouseUp}
               onMouseMove={handleMouseMove}
             >
-              {campaigns.map((c) => (
-                <div key={c.id} className="shrink-0 w-80 bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-xl font-bold mb-2 text-white">{c.title}</h3>
-                    <div className="relative h-32 bg-gray-700 rounded-md mb-4 flex items-center justify-center text-gray-500">
-                      <Image fill src={c.img} alt={c.title} className="rounded-t-xl h-32 object-cover" />
+              {communityCampaigns.map((c) => {
+                // Busca la primera imagen de cualquier zona
+                let img = DEFAULT_IMG;
+                for (const zone of c.campaignZones || []) {
+                  if (zone.zoneImgUrls && zone.zoneImgUrls.length > 0) {
+                    img = zone.zoneImgUrls[0];
+                    break;
+                  }
+                }
+                return (
+                  <div key={c.id} className="shrink-0 w-80 bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold mb-2 text-white">{c.name}</h3>
+                      <div className="relative h-32 bg-gray-700 rounded-md mb-4 flex items-center justify-center text-gray-500">
+                        <Image fill 
+                        src={img} 
+                        alt={c.name} 
+                        className="rounded-t-xl h-32 object-cover" />
+                      </div>
+                      <p className="text-sm text-gray-400 mb-4">{c.description.length > 120 
+                      ? c.description.substring(0, 120) + "..." 
+                      : c.description}</p>
                     </div>
-                    <p className="text-sm text-gray-400 mb-4">{c.description}</p>
+                    <button
+                      className="mt-4 w-full bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow"
+                      onClick={() => handleUseCampaign(c)}
+                    >
+                      Usar campaña
+                    </button>
                   </div>
-                  <button
-                    className="mt-4 w-full bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow"
-                  >
-                    Usar campaña
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

@@ -6,13 +6,14 @@ import Image from "next/image";
 import { CharacterClass, Attributes } from "@/app/lib/models/classmodel";
 import { CustomCharacter, DescriptionContent } from "@/app/lib/models/charactermodel";
 import { mockClasses } from "@/app/lib/consts/mockClasses";
-import { getFullRaceData } from "@/app/lib/services/characterServices";
+import { getFullRaceData, createCharacter } from "@/app/lib/services/characterServices";
 
 export default function SummaryPage() {
   const router = useRouter();
   const [character, setCharacter] = useState<CustomCharacter | null>(null);
   const [classDetails, setClassDetails] = useState<CharacterClass | null>(null);
   const [raceName, setRaceName] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Load complete character from customCharacter
@@ -39,9 +40,33 @@ export default function SummaryPage() {
     return (character.currentAttributes[attr] || 0) - classDetails.attributes[attr];
   };
 
-  const handleFinish = () => {
-    // TODO: Send character data to backend
-    router.push("/characters");
+  const handleFinish = async () => {
+    if (!character || isLoading) return;
+    setIsLoading(true);
+
+    // Arma el objeto para el backend
+    const backendCharacter = {
+      characterType: "playable",
+      creatorId: "user-hardcoded-001", // O el id real del usuario
+      name: character.name,
+      characterDescription: character.description?.backstory || "",
+      attributes: character.currentAttributes,
+      characterClass: character.class,
+      skills: character.skills?.map(s => s.name) || [],
+      inventoryItems: character.startItems?.map(i => i.name) || [],
+    };
+
+    try {
+      await createCharacter(backendCharacter);
+      localStorage.removeItem("customCharacter");
+      alert("¡Personaje creado exitosamente!");
+      router.push("/characters");
+    } catch (error) {
+      alert("Error al crear el personaje. Intenta de nuevo.");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleEdit = (section: string) => {
@@ -216,9 +241,10 @@ export default function SummaryPage() {
         <div className="flex justify-center gap-4">
           <button
             onClick={handleFinish}
+            disabled={isLoading}
             className="px-8 py-3 bg-black hover:bg-gray-800 text-white font-semibold rounded-lg transition-colors text-lg shadow-lg"
           >
-            Volver a mis personajes
+            {isLoading ? "Creando Personaje..." : "Crear Personaje"}
           </button>
         </div>
       </div>
