@@ -1,88 +1,31 @@
 "use client";
 
 import ConfirmDialog from "@/app/shared/components/ConfirmDialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { MdPerson2, MdAdd, MdShield, MdCheck } from "react-icons/md";
+import { useAuth } from "@/app/lib/context/AuthContext";
+import { decodeInviteToken, getGameSession, joinGameSession } from "@/app/lib/services/gameSessionService";
+import { getAllCharactersByUserId } from "@/app/lib/services/characterServices";
 
-// Mock de campaña
-const mockCampaign = {
-  id: "1",
-  name: "The Shadow Over Waterdeep",
-  image: "", // Si está vacío, se usará la imagen por defecto
-  description: "La ciudad de los esplendores esconde un oscuro secreto bajo sus muelles. Los héroes son convocados para descubrir la verdad antes de que el eclipse sumerja los reinos en la noche eterna.",
-  dm: "Aethelred",
-  players: "4 / 6 Plazas",
-};
+interface Campaign {
+  id: string;
+  name: string;
+  description: string;
+  image?: string;
+  dm: string;
+  players: string;
+}
 
-const campaignImage = mockCampaign.image || "/images/DefaultCampaign.png";
-
-// Mock de personajes
-const mockCharacters = [
-  {
-    id: 1,
-    name: "Tharivol",
-    race: "Elfo",
-    class: "Explorador",
-    level: 5,
-    avatar: "/images/Avatar1.png",
-    attributes: [
-      { label: "ROB", value: 10 }, // Robustez
-      { label: "INT", value: 18 }, // Inteligencia
-      { label: "FUE", value: 12 }, // Fuerza
-      { label: "DES", value: 15 }, // Destreza
-      { label: "CAR", value: 13 }, // Carisma
-      { label: "SAB", value: 14 }, // Sabiduría
-    ],
-  },
-  {
-    id: 2,
-    name: "Grog",
-    race: "Medio-Orco",
-    class: "Bárbaro",
-    level: 3,
-    avatar: "/images/char-grog.png",
-    attributes: [
-      { label: "ROB", value: 18 },
-      { label: "INT", value: 12 },
-      { label: "FUE", value: 16 },
-      { label: "DES", value: 11 },
-      { label: "CAR", value: 8 },
-      { label: "SAB", value: 10 },
-    ],
-  },
-  {
-    id: 3,
-    name: "Valerius",
-    race: "Humano",
-    class: "Paladín",
-    level: 4,
-    avatar: "/images/char-valerius.png",
-    attributes: [
-      { label: "ROB", value: 16 },
-      { label: "INT", value: 10 },
-      { label: "FUE", value: 14 },
-      { label: "DES", value: 12 },
-      { label: "CAR", value: 16 },
-      { label: "SAB", value: 13 },
-    ],
-  },
-  {
-    id: 4,
-    name: "Valerius",
-    race: "Humano",
-    class: "Paladín",
-    level: 4,
-    avatar: "/images/char-valerius.png",
-    attributes: [
-      { label: "ROB", value: 16 },
-      { label: "INT", value: 10 },
-      { label: "FUE", value: 14 },
-      { label: "DES", value: 12 },
-      { label: "CAR", value: 16 },
-      { label: "SAB", value: 13 },
-    ],
-  },
-];
+interface Character {
+  id: string;
+  name: string;
+  race: string;
+  class: string;
+  level: number;
+  avatar: string;
+  attributes: Array<{ label: string; value: number }>;
+}
 
 function getAttributeBarHeight(value: number) {
   // Suponiendo que el valor máximo de atributo es 20
@@ -93,20 +36,139 @@ function getAttributeBarHeight(value: number) {
 }
 
 export default function CampaignInvitePage() {
-  const [selected, setSelected] = useState<number | null>(null);
+  const params = useParams();
+  const router = useRouter();
+  const { user, accessToken, isAuthenticated } = useAuth();
+  
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [pendingSelect, setPendingSelect] = useState<number | null>(null);
+  const [pendingSelect, setPendingSelect] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [joining, setJoining] = useState(false);
 
-  function handleConfirm() {
+  const token = params.token as string;
+
+  useEffect(() => {
+    if (!isAuthenticated || !user || !accessToken) {
+      router.push('/auth');
+      return;
+    }
+    
+    loadCampaignAndCharacters();
+  }, [isAuthenticated, user, accessToken, token]);
+
+  const loadCampaignAndCharacters = async () => {
+    if (!user || !accessToken) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Decode invite token
+      const decoded = decodeInviteToken(token);
+      if (!decoded) {
+        setError('Token de invitación inválido');
+        return;
+      }
+
+      // Fetch campaign session
+      const session = await getGameSession(decoded.sessionId, accessToken);
+      
+      // TODO: Fetch base campaign details from backend
+      // For now, using mock data
+      setCampaign({
+        id: session.id,
+        name: 'Campaign Name', // Should fetch from baseCampaignId
+        description: 'Campaign description',
+        dm: 'Dungeon Master',
+        players: `${session.playerIds?.length || 0} / 6 Plazas`,
+      });
+
+      // Fetch user's characters
+      const userChars = await getAllCharactersByUserId(user.id, accessToken);
+      
+      // Map to frontend format
+      const mappedChars = userChars.map((char: any) => ({
+        id: char.id,
+        name: char.characterName || 'Unnamed',
+        race: char.characterRace || 'Unknown',
+        class: char.characterClass || 'Unknown',
+        level: char.level || 1,
+        avatar: char.avatar || '/images/Avatar1.png',
+        attributes: [
+          { label: 'ROB', value: char.robustez || 10 },
+          { label: 'INT', value: char.inteligence || 10 },
+          { label: 'FUE', value: char.strength || 10 },
+          { label: 'DES', value: char.dexterity || 10 },
+          { label: 'CAR', value: char.charisma || 10 },
+          { label: 'SAB', value: char.wisdom || 10 },
+        ],
+      }));
+      
+      setCharacters(mappedChars);
+    } catch (err) {
+      console.error('Error al cargar campaña:', err);
+      setError('Error al cargar la campaña');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  async function handleConfirm() {
+    if (!pendingSelect || !user || !accessToken) return;
+    
     setShowConfirm(false);
-    setSelected(pendingSelect);
-    // Aquí puedes hacer la lógica para unir al usuario y redirigir a la pantalla de espera
+    setJoining(true);
+    
+    try {
+      await joinGameSession(token, pendingSelect, user.id, accessToken);
+      setSelected(pendingSelect);
+      const decoded = decodeInviteToken(token);
+      if (decoded) {
+        router.push(`/my-campaigns/wait/${decoded.sessionId}`);
+      }
+    } catch (error) {
+      console.error('Error al unirse a la sesión:', error);
+      alert('Error al unirse a la sesión. Intenta de nuevo.');
+    } finally {
+      setJoining(false);
+    }
   }
 
   function handleCancel() {
     setShowConfirm(false);
     setPendingSelect(null);
   }
+
+  if (loading) {
+    return (
+      <div className="bg-[#f6f8f8] text-[#2b2218] min-h-screen flex items-center justify-center">
+        <p className="text-lg">Cargando campaña...</p>
+      </div>
+    );
+  }
+
+  if (error || !campaign) {
+    return (
+      <div className="bg-[#f6f8f8] text-[#2b2218] min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Error</h2>
+          <p className="text-lg mb-4">{error || 'Campaña no encontrada'}</p>
+          <button
+            className="bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded"
+            onClick={() => router.push('/my-campaigns')}
+          >
+            Volver a Mis Campañas
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const campaignImage = campaign.image || "/images/DefaultCampaign.png";
 
   return (
     <div className="bg-[#f6f8f8] text-[#2b2218] min-h-screen bg-repeat font-body">
@@ -122,22 +184,22 @@ export default function CampaignInvitePage() {
               <div className="flex items-center gap-2 mb-2">
                 <span className="bg-[#1fadad]/90 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Invitación</span>
                 <span className="text-white/80 text-xs uppercase tracking-wide flex items-center gap-1">
-                  <MdPerson2 className="text-sm" /> DM {mockCampaign.dm}
+                  <MdPerson2 className="text-sm" /> DM {campaign.dm}
                 </span>
               </div>
-              <h1 className="text-3xl md:text-5xl font-display font-bold text-white shadow-black drop-shadow-md">{mockCampaign.name}</h1>
+              <h1 className="text-3xl md:text-5xl font-display font-bold text-white shadow-black drop-shadow-md">{campaign.name}</h1>
             </div>
           </div>
           <div className="bg-white p-6 md:px-10 flex flex-col md:flex-row gap-6 md:items-center justify-between border-t border-[#1fadad]/20">
             <div className="flex-1">
               <p className="text-[#2b2218]/80 italic font-serif text-lg leading-relaxed">
-                {mockCampaign.description}
+                {campaign.description}
               </p>
             </div>
             <div className="flex gap-6 text-sm font-semibold uppercase tracking-wide text-[#2b2218]/60 shrink-0 border-l border-gray-200 pl-6 md:border-l-2">
               <div className="flex flex-col">
                 <span className="text-[10px] text-[#2b2218]/40">Jugadores</span>
-                <span className="text-[#1fadad]">{mockCampaign.players}</span>
+                <span className="text-[#1fadad]">{campaign.players}</span>
               </div>
             </div>
           </div>
@@ -152,7 +214,7 @@ export default function CampaignInvitePage() {
         </div>
         <div className="mb-12">
           <div className="flex gap-6 overflow-x-auto pb-4 hide-scrollbar">
-            {mockCharacters.map((char) => (
+            {characters.map((char) => (
               <div key={char.id} className="group relative min-w-[270px] max-w-[270px] shrink-0">
                 <input
                   className="peer sr-only"
@@ -199,9 +261,9 @@ export default function CampaignInvitePage() {
                           setPendingSelect(char.id);
                           setShowConfirm(true);
                         }}
-                        disabled={selected === char.id}
+                        disabled={selected === char.id || joining}
                       >
-                        {selected === char.id ? "Seleccionado" : "Seleccionar"}
+                        {selected === char.id ? "Seleccionado" : joining ? "Uniéndose..." : "Seleccionar"}
                       </button>
                     </div>
                   </div>
@@ -209,7 +271,10 @@ export default function CampaignInvitePage() {
               </div>
             ))}
             {/* Botón para crear nuevo personaje */}
-            <button className="group min-w-[270px] max-w-[270px] h-full min-h-[340px] bg-white/50 border-2 border-dashed border-[#1fadad] rounded-lg flex flex-col items-center justify-center p-6 hover:border-[#1fadad]/60 hover:bg-white/80 transition-all text-[#1fadad]/90 hover:text-[#1fadad] shrink-0">
+            <button 
+              className="group min-w-[270px] max-w-[270px] h-full min-h-[340px] bg-white/50 border-2 border-dashed border-[#1fadad] rounded-lg flex flex-col items-center justify-center p-6 hover:border-[#1fadad]/60 hover:bg-white/80 transition-all text-[#1fadad]/90 hover:text-[#1fadad] shrink-0"
+              onClick={() => router.push('/characters/builder')}
+            >
               <div className="w-16 h-16 rounded-full bg-[#1fadad]/40 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <MdAdd className="text-3xl" /> 
               </div>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { uploadCampaign } from "@/app/lib/services/campaingServices";
+import { useAuth } from "@/app/lib/context/AuthContext";
 
 interface Zone {
   id: string;
@@ -17,6 +18,7 @@ const MAX_TOTAL_IMAGE_SIZE_MB = 20; // Tamaño máximo total en MB
 
 export default function ZoneCreationPage() {
   const router = useRouter();
+  const { user, accessToken, isAuthenticated } = useAuth();
   const [zones, setZones] = useState<Zone[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
@@ -132,6 +134,13 @@ export default function ZoneCreationPage() {
       return;
     }
 
+    // Validar que todas las zonas tengan al menos una imagen
+    const zonesWithoutImages = zones.filter(zone => zone.images.length === 0);
+    if (zonesWithoutImages.length > 0) {
+      alert(`Las siguientes zonas no tienen imágenes: ${zonesWithoutImages.map(z => z.name).join(', ')}. Por favor añade al menos una imagen por zona.`);
+      return;
+    }
+
     // Sumar el tamaño total de todas las imágenes de todas las zonas
     let totalSize = 0;
     zones.forEach(zone => {
@@ -184,24 +193,35 @@ export default function ZoneCreationPage() {
         });
       }
 
+      if (!isAuthenticated || !accessToken || !user) {
+        alert("Debes iniciar sesión para crear una campaña.");
+        router.push('/auth');
+        return;
+      }
+
       const campaignData = {
-        dungeonMasterId: "user-hardcoded-001",
+        dungeonMasterId: user.id,
         name: basicInfo.name,
         description: basicInfo.description,
         maxPlayers: basicInfo.numberOfPlayers,
         zones: formattedZones,
       };
 
-      await uploadCampaign(campaignData, allFiles);
+      await uploadCampaign(campaignData, allFiles, accessToken);
 
       localStorage.removeItem("campaignBasicInfo");
       localStorage.removeItem("campaignZones");
 
       alert("¡Campaña creada exitosamente!");
       router.push("/campaign");
-    } catch (error) {
-      alert("Error al crear la campaña. Intenta de nuevo.");
-      console.error(error);
+    } catch (error: any) {
+      if (error.message.includes('sesión ha expirado')) {
+        alert(error.message);
+        router.push('/auth');
+      } else {
+        alert("Error al crear la campaña. Intenta de nuevo.");
+        console.error(error);
+      }
     } finally {
       setIsLoading(false); // Oculta el loader
     }

@@ -7,9 +7,11 @@ import { CharacterClass, Attributes } from "@/app/lib/models/classmodel";
 import { CustomCharacter, DescriptionContent } from "@/app/lib/models/charactermodel";
 import { mockClasses } from "@/app/lib/consts/mockClasses";
 import { getFullRaceData, createCharacter } from "@/app/lib/services/characterServices";
+import { useAuth } from "@/app/lib/context/AuthContext";
 
 export default function SummaryPage() {
   const router = useRouter();
+  const { user, accessToken, isAuthenticated } = useAuth();
   const [character, setCharacter] = useState<CustomCharacter | null>(null);
   const [classDetails, setClassDetails] = useState<CharacterClass | null>(null);
   const [raceName, setRaceName] = useState<string>("");
@@ -42,12 +44,19 @@ export default function SummaryPage() {
 
   const handleFinish = async () => {
     if (!character || isLoading) return;
+    
+    if (!isAuthenticated || !accessToken || !user) {
+      alert("Debes iniciar sesión para crear un personaje.");
+      router.push('/auth');
+      return;
+    }
+
     setIsLoading(true);
 
     // Arma el objeto para el backend
     const backendCharacter = {
       characterType: "playable",
-      creatorId: "user-hardcoded-001", // O el id real del usuario
+      creatorId: user.id,
       name: character.name,
       characterDescription: character.description?.backstory || "",
       attributes: character.currentAttributes,
@@ -57,7 +66,7 @@ export default function SummaryPage() {
     };
 
     try {
-      await createCharacter(backendCharacter);
+      await createCharacter(backendCharacter, accessToken);
       localStorage.removeItem("customCharacter");
       alert("¡Personaje creado exitosamente!");
       router.push("/characters");

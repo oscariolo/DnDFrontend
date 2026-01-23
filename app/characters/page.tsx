@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { getAllCharacters } from "../lib/services/characterServices";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../lib/context/AuthContext";
 
 function mapAttributes(attributes: any) {
 	if (!attributes) return [];
@@ -27,6 +28,7 @@ function handleEditCharacter(char: any, router: any) {
 }
 
 export default function CharactersPage() {
+	const { accessToken } = useAuth();
 	const [characters, setCharacters] = useState<any[]>([]);
 	const [visibleCharacters, setVisibleCharacters] = useState(0);
 	const [noMore, setNoMore] = useState(false);
@@ -40,7 +42,8 @@ export default function CharactersPage() {
 
 	useEffect(() => {
 		if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
-		getAllCharacters()
+		if (!accessToken) return;
+		getAllCharacters(accessToken)
 		.then((data) => {
 			// Mapea los datos recibidos para adaptarlos al frontend
 			const mapped = data.map((char: any) => ({

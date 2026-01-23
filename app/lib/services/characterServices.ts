@@ -1,9 +1,8 @@
 import { ApolloClient, InMemoryCache, gql, HttpLink } from '@apollo/client';
 import { RaceDetails } from '../models/charactermodel';
 
-const GRAPHQL_URL = "https://www.dnd5eapi.co/graphql/2014"; // Replace with your GraphQL endpoint
-
-// Create Apollo Client instance
+const GRAPHQL_URL = "https://www.dnd5eapi.co/graphql/2014";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const client = new ApolloClient({
   link: new HttpLink({
     uri: GRAPHQL_URL,
@@ -18,8 +17,6 @@ interface queryResponse {
   name: string;
   description: string;
 }
-
-// GraphQL query for races
 const GET_RACES = gql`
   query Races {
     races {
@@ -34,8 +31,6 @@ const GET_RACES = gql`
     }
   }
 `;
-
-// GraphQL query for skills
 const GET_SKILLS = gql`
   query Skills {
     skills {
@@ -78,7 +73,7 @@ export async function getListOfRaces(): Promise<queryResponse[]> {
     return parsedData;
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to fetch races");
+    throw new Error("Error al obtener razas");
   }
 }
 
@@ -95,7 +90,7 @@ export async function getFullRaceData(): Promise<RaceDetails[]> {
     return data.races;
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to fetch races");
+    throw new Error("Error al obtener razas");
   }
 }
 
@@ -116,7 +111,7 @@ export async function getListOfSkills(): Promise<queryResponse[]> {
     return parsedData;
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to fetch skills");
+    throw new Error("Error al obtener habilidades");
   }
 }
 
@@ -137,30 +132,64 @@ export async function getListOfTools(): Promise<queryResponse[]> {
         return parsedData;
     } catch (error) {
         console.error(error);
-        throw new Error("Failed to fetch tools");
+        throw new Error("Error al obtener herramientas");
     } 
 }
 
-export async function createCharacter(characterData: any) {
-  const res = await fetch('http://localhost:8080/api/characters', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(characterData),
-  });
-  if (!res.ok) throw new Error('Error al crear personaje');
-  return res.json();
+export async function createCharacter(characterData: any, accessToken?: string) {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/characters`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(characterData),
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => 'Unknown error');
+      throw new Error(`Error ${res.status}: ${errorText}`);
+    }
+    
+    return res.json();
+  } catch (error) {
+    console.error('Error creating character:', error);
+    throw error;
+  }
 }
 
-export async function getAllCharacters() {
-  const res = await fetch('http://localhost:8080/api/characters');
+export async function getAllCharacters(accessToken: string) {
+  const res = await fetch(`${BACKEND_URL}/api/characters`, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
   if (!res.ok) throw new Error('Error al obtener personajes');
   return res.json();
 }
 
-export async function getAllPlayableCharacters() {
-  const res = await fetch('http://localhost:8080/api/characters/playable');
-  if (!res.ok) throw new Error('Error al obtener jugadores jugables');
+export async function getAllPlayableCharacters(accessToken: string) {
+  const res = await fetch(`${BACKEND_URL}/api/characters/playable`, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+  if (!res.ok) throw new Error('Error al obtener personajes jugables');
+  return res.json();
+}
+
+export async function getAllCharactersByUserId(userId: string, accessToken: string) {
+  const res = await fetch(`${BACKEND_URL}/api/characters/user/${userId}`, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+  if (!res.ok) throw new Error('Error al obtener personajes del usuario');
   return res.json();
 }

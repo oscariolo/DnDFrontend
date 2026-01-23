@@ -5,18 +5,21 @@ import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getAllCampaigns } from "../lib/services/campaingServices";
+import { useAuth } from "../lib/context/AuthContext";
 
 const DEFAULT_IMG = "/images/campaign1.jpg";
 
 export default function CampaignPage() {
+  const { accessToken } = useAuth();
   const [communityCampaigns, setCommunityCampaigns] = useState<any[]>([]);
   const router = useRouter();
   const createCampRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    getAllCampaigns().then(setCommunityCampaigns).catch(() => setCommunityCampaigns([]));
-  }, []);
+    if (!accessToken) return;
+    getAllCampaigns(accessToken).then(setCommunityCampaigns).catch(() => setCommunityCampaigns([]));
+  }, [accessToken]);
 
   const fantasyGradientText = "bg-clip-text text-transparent bg-gradient-to-r from-black via-gray-900 to-black";
 
@@ -27,8 +30,6 @@ export default function CampaignPage() {
     createCampRef.current?.classList.remove('ring-4', "ring-fuchsia-500", "scale-105");
     }, 1000);
   };
-
-  // Drag scroll handlers
   let isDown = false;
   let startX = 0;
   let scrollLeft = 0;
@@ -177,7 +178,6 @@ export default function CampaignPage() {
           </div>
         </section>
       </div>
-      {/* Oculta el scroll horizontal del carrusel */}
       <style>{`
         .scroll-container {
           -ms-overflow-style: none;

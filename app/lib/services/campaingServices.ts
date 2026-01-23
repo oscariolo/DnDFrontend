@@ -1,27 +1,34 @@
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-export async function getAllCampaigns() {
-  const res = await fetch('http://localhost:8080/api/campaigns');
+export async function getAllCampaigns(accessToken?: string) {
+  const headers: HeadersInit = {};
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  const res = await fetch(`${BACKEND_URL}/api/campaigns`, { headers });
   if (!res.ok) throw new Error('Error al obtener campañas');
   return res.json();
 }
 
-export async function getCampaignsByUserId(userId: string) {
-  const res = await fetch(`http://localhost:8080/api/campaigns/user/${userId}`);
-  if (!res.ok) throw new Error('Error al obtener campañas del usuario');
+export async function getCampaignsByUserId(userId: string, accessToken?: string) {
+  const headers: HeadersInit = {};
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  const res = await fetch(`${BACKEND_URL}/api/campaigns/user/${userId}`, { headers });
+  
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error('Error al obtener campañas del usuario:', res.status, errorText);
+    throw new Error(`Error al obtener campañas del usuario (${res.status})`);
+  }
+  
   return res.json();
 }
 
-// export async function createCampaign(data: any) {
-//   const res = await fetch('http://localhost:8080/api/campaigns', {
-//     method: 'POST',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify(data),
-//   });
-//   if (!res.ok) throw new Error('Error al crear campaña');
-//   return res.json();
-// }
-
-export async function uploadCampaign(campaignDetails: any, files: File[]) {
+export async function uploadCampaign(campaignDetails: any, files: File[], accessToken?: string) {
   const formData = new FormData();
   formData.append(
     'campaignDetails',
@@ -31,11 +38,41 @@ export async function uploadCampaign(campaignDetails: any, files: File[]) {
     formData.append('files', file);
   });
 
-  const res = await fetch('http://localhost:8080/api/campaigns/upload', {
+  const headers: HeadersInit = {};
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  const res = await fetch(`${BACKEND_URL}/api/campaigns/upload`, {
     method: 'POST',
+    headers,
     body: formData,
   });
 
-  if (!res.ok) throw new Error('Error al subir campaña');
+  if (res.status === 401) {
+    throw new Error('Tu sesión ha expirado. Por favor, inicia sesión de nuevo.');
+  }
+  
+  if (!res.ok) {
+    throw new Error('Error al subir campaña');
+  }
+  
+  return res.json();
+}
+
+export async function getCampaignById(campaignId: string, accessToken?: string) {
+  const headers: HeadersInit = {};
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  const res = await fetch(`${BACKEND_URL}/api/campaigns/${campaignId}`, { headers });
+  
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error('Error al obtener campaña por ID:', res.status, errorText);
+    throw new Error(`Error al obtener la campaña (${res.status})`);
+  }
+  
   return res.json();
 }
