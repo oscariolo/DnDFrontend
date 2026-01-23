@@ -107,18 +107,6 @@ export default function CampaignPage() {
             className="object-cover absolute inset-0 w-full h-full"
             priority
           />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative w-80 h-96 flex items-center justify-center">
-              <div className="absolute inset-0 flex items-center justify-center z-10">
-                <Image
-                  src="/images/campaign1.jpg"
-                  alt="Campaign"
-                  fill
-                  className="object-cover absolute inset-0 rounded-lg opacity-50"
-                />
-              </div>
-            </div>
-          </div>
           {/* Contenido */}
           <div
             ref={createCampRef}
