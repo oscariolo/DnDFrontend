@@ -2,7 +2,7 @@ import { ApolloClient, InMemoryCache, gql, HttpLink } from '@apollo/client';
 import { RaceDetails } from '../models/charactermodel';
 
 const GRAPHQL_URL = "https://www.dnd5eapi.co/graphql/2014";
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 const client = new ApolloClient({
   link: new HttpLink({
     uri: GRAPHQL_URL,
@@ -164,11 +164,8 @@ export async function createCharacter(characterData: any, accessToken?: string) 
   }
 }
 
-export async function getAllCharacters(accessToken: string) {
+export async function getAllCharacters() {
   const res = await fetch(`${BACKEND_URL}/api/characters`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
   if (!res.ok) throw new Error('Error al obtener personajes');
   return res.json();

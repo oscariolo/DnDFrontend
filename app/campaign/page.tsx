@@ -17,9 +17,8 @@ export default function CampaignPage() {
   const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!accessToken) return;
-    getAllCampaigns(accessToken).then(setCommunityCampaigns).catch(() => setCommunityCampaigns([]));
-  }, [accessToken]);
+    getAllCampaigns().then(setCommunityCampaigns).catch(() => setCommunityCampaigns([]));
+  }, []);
 
   const fantasyGradientText = "bg-clip-text text-transparent bg-gradient-to-r from-black via-gray-900 to-black";
 

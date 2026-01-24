@@ -1,12 +1,8 @@
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+// const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
-export async function getAllCampaigns(accessToken?: string) {
-  const headers: HeadersInit = {};
-  if (accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`;
-  }
-
-  const res = await fetch(`${BACKEND_URL}/api/campaigns`, { headers });
+export async function getAllCampaigns() {
+  const res = await fetch(`${BACKEND_URL}/api/campaigns`);
   if (!res.ok) throw new Error('Error al obtener campañas');
   return res.json();
 }
