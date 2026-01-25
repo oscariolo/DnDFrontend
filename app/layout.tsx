@@ -7,8 +7,21 @@ import { AuthProvider } from './lib/context/AuthContext'
 
 
 export const metadata: Metadata = {
-  title: "DnD Maker",
-  description: "Page dedicated to create characters and campaigns for role playing games",
+  title: "D&D Campaign Manager",
+  description: "Manage your Dungeons & Dragons campaigns, characters, and game sessions",
+  manifest: "/manifest.json",
+  themeColor: "#16213e",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "D&D Manager",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({
@@ -18,6 +31,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head>
+        <link rel="icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
       <body
         className={`${tiamatFont.variable} antialiased`}
         style={{ backgroundColor: "#fefcfb", minHeight: "100vh", margin: 0, display: "flex", flexDirection: "column" }}
