@@ -81,8 +81,7 @@ export default function MyCampaignsPage() {
         },
         accessToken
       );
-      
-      router.push(`/my-campaigns/${newSession.id}`);
+      router.push(`/my-campaigns/${newSession._id}`);
     } catch (error) {
       console.error('Error al crear sesión de juego:', error);
       alert('Error al crear la sesión de juego');

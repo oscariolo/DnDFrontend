@@ -1,7 +1,7 @@
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
 export interface CampaignRun {
-  id: string;
+  _id: string;
   baseCampaignId: string;
   playerIds: string[];
   playersProgress?: any;
@@ -22,11 +22,14 @@ export interface JoinSessionRequest {
   characterId: string;
   userId: string;
 }
+
+const GAME_SESSION_BASE_API = `${BACKEND_URL}/api/game-sessions`;
+
 export async function createGameSession(
   data: CreateGameSessionRequest,
   token: string
 ): Promise<CampaignRun> {
-  const response = await fetch(`${BACKEND_URL}/api/campaigns/game`, {
+  const response = await fetch(`${GAME_SESSION_BASE_API}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -39,10 +42,16 @@ export async function createGameSession(
     throw new Error('Error al crear la sesión de juego');
   }
 
-  return response.json();
+  const jsonResponse = await response.json();
+  const sessionData = jsonResponse['data'];
+  if (!sessionData) {
+    throw new Error('Empty response from server');
+  }
+
+  return sessionData;
 }
 export async function getGameSession(sessionId: string, token: string): Promise<CampaignRun> {
-  const response = await fetch(`${BACKEND_URL}/api/campaigns/game/${sessionId}`, {
+  const response = await fetch(`${GAME_SESSION_BASE_API}/${sessionId}`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -54,16 +63,17 @@ export async function getGameSession(sessionId: string, token: string): Promise<
     throw new Error(`Error al obtener la sesión de juego: ${response.status} ${errorText}`);
   }
 
-  const text = await response.text();
-  if (!text) {
+  const jsonResponse = await response.json();
+  const data = jsonResponse['data'];
+  if (!data) {
     throw new Error('Empty response from server');
   }
-  
-  return JSON.parse(text);
+
+  return data;
 }
 export async function getUserGameSessions(userId: string, token: string): Promise<CampaignRun[]> {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/campaigns/game/user/playing/${userId}`, {
+    const response = await fetch(`${GAME_SESSION_BASE_API}/player/${userId}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -79,7 +89,9 @@ export async function getUserGameSessions(userId: string, token: string): Promis
       return [];
     }
 
-    const data = await response.json();
+    const jsonResponse = await response.json();
+    const data = jsonResponse['data'];
+
     return data || [];
   } catch (error) {
     console.error('Error al obtener sesiones de juego:', error);
@@ -116,7 +128,7 @@ export async function addPlayerToSession(
   playerId: string,
   token: string
 ): Promise<CampaignRun> {
-  const response = await fetch(`${BACKEND_URL}/api/campaigns/game/user`, {
+  const response = await fetch(`${GAME_SESSION_BASE_API}/${sessionId}/players`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
