@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { uploadCampaign } from "@/app/lib/services/campaingServices";
 import { useAuth } from "@/app/lib/context/AuthContext";
+import { addPendingCampaign } from "@/app/lib/utils/db";
+import { saveZoneImage, getZoneImage, removeZoneImage } from "@/app/lib/utils/db";
 
 interface Zone {
   id: string;
@@ -30,15 +32,27 @@ export default function ZoneCreationPage() {
   });
 
   useEffect(() => {
-    const savedZones = localStorage.getItem("campaignZones");
-    if (savedZones) {
-      // Solo recupera los datos básicos y deja images vacío
-      const parsed = JSON.parse(savedZones).map((zone: any) => ({
-        ...zone,
-        images: [],
-      }));
-      setZones(parsed);
-    }
+    const loadZonesWithImages = async () => {
+      const savedZones = localStorage.getItem("campaignZones");
+      if (savedZones) {
+        const parsed = JSON.parse(savedZones);
+        // Recupera imágenes de IndexedDB para cada zona
+        const zonesWithImages = await Promise.all(
+          parsed.map(async (zone: any) => {
+            const images: File[] = [];
+            // Intenta recuperar hasta 4 imágenes por zona (ajusta según tu lógica)
+            for (let i = 0; i < 4; i++) {
+              const file = await getZoneImage(zone.id, i);
+              if (file) images.push(file);
+            }
+            return { ...zone, images };
+          })
+        );
+        setZones(zonesWithImages);
+      }
+    };
+
+    loadZonesWithImages();
   }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,7 +82,7 @@ export default function ZoneCreationPage() {
     }));
   };
 
-  const handleCreateZone = () => {
+  const handleCreateZone = async () => {
     if (!currentZone.name.trim()) {
       alert("Por favor ingresa un nombre para la zona");
       return;
@@ -98,9 +112,15 @@ export default function ZoneCreationPage() {
       updatedZones = [newZone, ...zones];
     }
 
+    // Guarda imágenes en IndexedDB
+    const zoneId = editingZoneId || updatedZones[0].id;
+    for (let i = 0; i < currentZone.images.length; i++) {
+      await saveZoneImage(zoneId, i, currentZone.images[i]);
+    }
+
     setZones(updatedZones);
     localStorage.setItem(
-      "campaignZones", 
+      "campaignZones",
       JSON.stringify(
         updatedZones.map(({ id, name, description }) => ({ id, name, description }))
       )
@@ -120,7 +140,11 @@ export default function ZoneCreationPage() {
     setIsCreating(true);
   };
 
-  const handleDeleteZone = (id: string) => {
+  const handleDeleteZone = async (id: string) => {
+    // Elimina imágenes asociadas a la zona
+    for (let i = 0; i < 4; i++) {
+      await removeZoneImage(id, i);
+    }
     const updatedZones = zones.filter((zone) => zone.id !== id);
     setZones(updatedZones);
     localStorage.setItem("campaignZones", JSON.stringify(updatedZones));
@@ -206,6 +230,15 @@ export default function ZoneCreationPage() {
         maxPlayers: basicInfo.numberOfPlayers,
         zones: formattedZones,
       };
+
+      if (!navigator.onLine) {
+        // Guardar en IndexedDB si está offline
+        await addPendingCampaign(campaignData, allFiles);
+        alert("Estás sin conexión. Tu campaña se guardó localmente y se subirá cuando recuperes conexión.");
+        setIsLoading(false);
+        router.push("/campaign");
+        return;
+      }
 
       await uploadCampaign(campaignData, allFiles, accessToken);
 

@@ -65,3 +65,9 @@ body {
   transform: scale(0.9);
 }
 
+/* app/globals.css */
+.builder-container {
+  min-height: 100vh;
+  padding-bottom: 4rem; /* Ajusta según el alto de tu footer */
+}
+

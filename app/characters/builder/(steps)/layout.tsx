@@ -16,10 +16,14 @@ export default function BuilderLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen ">
-      <SwipeableTab items={builderSteps} />
-      <CharacterNameInput />
-      <main>{children}</main>
+    <div className="builder-container ">
+      <div className="w-full">
+        <SwipeableTab items={builderSteps} />
+      </div>
+      <div className="max-w-3xl mx-auto">
+        <CharacterNameInput />
+        <main>{children}</main>
+      </div>
     </div>
   );
 }

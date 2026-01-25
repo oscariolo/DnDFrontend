@@ -1,7 +1,7 @@
-
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { createPortal } from "react-dom";
+import { useEffect, useState } from "react";
 import { RaceDetails } from "@/app/lib/models/charactermodel";
 
 interface RaceModalProps {
@@ -20,6 +20,7 @@ export default function RaceModal({
   onChangeRace 
 }: RaceModalProps) {
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
+  const [mounted, setMounted] = useState(false);
 
   const toggleSection = (section: string) => {
     setOpenSections(prev => {
@@ -33,6 +34,15 @@ export default function RaceModal({
     });
   };
 
+  // 1. Declara handleSelect ANTES de usarlo
+  const handleSelect = () => {
+    onClose(); // Esto desmonta el modal y limpia el overflow
+    setTimeout(() => {
+      onRaceSelected(); // O navega al siguiente paso
+    }, 0);
+  };
+
+  // 2. Luego define el contenido
   const content = (
     <div className="p-6 relative">
       {!isInline && (
@@ -141,7 +151,7 @@ export default function RaceModal({
               Cambiar raza
             </button>
             <button
-              onClick={onRaceSelected}
+              onClick={handleSelect}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
             >
               Continuar
@@ -156,7 +166,7 @@ export default function RaceModal({
               Cerrar
             </button>
             <button
-              onClick={onRaceSelected}
+              onClick={handleSelect}
               className="px-6 py-2 bg-green-700 text-white rounded-lg hover:bg-green-900 transition-colors font-semibold"
             >
               Seleccionar raza
@@ -167,6 +177,15 @@ export default function RaceModal({
     </div>
   );
 
+  useEffect(() => {
+    setMounted(true);
+    // Opcional: bloquear scroll del body
+    document.body.style.overflow = "auto";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   if (isInline) {
     return (
       <div className="bg-white rounded-lg shadow-2xl w-full">
@@ -175,17 +194,23 @@ export default function RaceModal({
     );
   }
 
-  return (
+  const modal = (
     <div
-      className="fixed inset-0 bg-black opacity-95 bg-opacity-50 flex items-center justify-center p-4 z-50"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-99999"
       onClick={onClose}
+      style={{ overscrollBehavior: "contain" }}
     >
       <div
-        className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-lg shadow-2xl max-w-2xl w-full h-[90vh] overflow-y-auto z-100000"
         onClick={(e) => e.stopPropagation()}
       >
         {content}
       </div>
     </div>
   );
+
+  // Solo renderiza el portal en el cliente
+  if (!mounted) return null;
+
+  return createPortal(modal, document.body);
 }

@@ -3,6 +3,7 @@ import { RaceDetails } from '../models/charactermodel';
 
 const GRAPHQL_URL = "https://www.dnd5eapi.co/graphql/2014";
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+
 const client = new ApolloClient({
   link: new HttpLink({
     uri: GRAPHQL_URL,

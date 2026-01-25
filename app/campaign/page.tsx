@@ -5,6 +5,7 @@ import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getAllCampaigns } from "../lib/services/campaingServices";
+import { urlToFile, saveZoneImage } from "@/app/lib/utils/db";
 
 const DEFAULT_IMG = "/images/campaign1.jpg";
 
@@ -64,24 +65,33 @@ export default function CampaignPage() {
     }
   };
 
-  const handleUseCampaign = (campaign: any) => {
-    // Prepara los datos para el flujo de creación
+  const handleUseCampaign = async (campaign: any) => {
     const basicInfo = {
       name: campaign.name,
       description: campaign.description,
       numberOfPlayers: campaign.maxPlayers,
     };
-    // Guarda en localStorage
+
+    // Descarga imágenes y guárdalas en IndexedDB
+    await Promise.all(
+      (campaign.campaignZones || []).map(async (zone: any, idx: number) => {
+        if (zone.zoneImgUrls && zone.zoneImgUrls.length > 0) {
+          const url = zone.zoneImgUrls[0];
+          const file = await urlToFile(url, `zone_${idx}.jpg`, "image/jpeg");
+          await saveZoneImage(`${Date.now()}_${idx}`, 0, file);
+        }
+      })
+    );
+
     localStorage.setItem("campaignBasicInfo", JSON.stringify(basicInfo));
     localStorage.setItem("campaignZones", JSON.stringify(
       campaign.campaignZones?.map((zone: any, idx: number) => ({
-        id: `${Date.now()}_${idx}`, // id único
+        id: `${Date.now()}_${idx}`,
         name: zone.zoneName,
         description: zone.description,
-        images: [],
+        images: [], // Las imágenes estarán en IndexedDB
       })) || []
     ));
-    // Redirige al flujo de creación
     router.push("/campaign/builder/basicInfo");
   };
 
