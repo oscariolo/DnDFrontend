@@ -2,13 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { MdGroups, MdPersonOff, MdChevronRight, MdMenuBook, MdHistoryEdu } from "react-icons/md";
 import { useAuth } from "@/app/lib/context/AuthContext";
 import { getGameSession, getInviteLink } from "@/app/lib/services/gameSessionService";
 import { getAllCharactersByUserId } from "@/app/lib/services/characterServices";
 import { getCampaignById } from "@/app/lib/services/campaingServices";
+import { connectToGameSession, listenToGameSessionEvents, sendMessageToGameSession } from "@/app/lib/services/socketService";
+import { start } from "repl";
 
 interface Character {
   id: string;
@@ -20,6 +22,31 @@ interface Character {
   ownerId: string;
   avatar: string;
   assigned: boolean;
+}
+
+interface ChatMessage {
+  id: string;
+  senderId: string;
+  messageContent: string;
+  timestamp: string;
+}
+
+// Chat Message Component
+function ChatMessageComponent({ message }: { message: ChatMessage }) {
+  return (
+    <div className="flex gap-2 items-start">
+      <div className="w-8 h-8 rounded bg-gray-800 border border-gray-600 shrink-0 flex items-center justify-center text-white text-[10px] font-bold overflow-hidden">
+        {message.senderId.substring(0, 2).toUpperCase()}
+      </div>
+      <div className="flex-1">
+        <div className="flex items-baseline justify-between">
+          <span className="text-xs font-bold text-[#0b87da]">{message.senderId}</span>
+          <span className="text-[10px] text-gray-400">{message.timestamp}</span>
+        </div>
+        <p className="text-sm text-gray-800 leading-snug">{message.messageContent}</p>
+      </div>
+    </div>
+  );
 }
 
 export default function CampaignDetailsPage() {
@@ -35,15 +62,69 @@ export default function CampaignDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [copiedLink, setCopiedLink] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to latest message within chat container only
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      // Scroll only the chat container, not the entire page
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
 
   useEffect(() => {
     if (!isAuthenticated || !user || !accessToken) {
       router.push('/auth');
       return;
     }
-    
+    startWebSocket(accessToken, user.id, campaignId);
     loadCampaignData();
+
   }, [isAuthenticated, user, accessToken, campaignId]);
+
+
+  // In the sendSessionMessage function, change to:
+  const sendSessionMessage = async () => {
+    const inputElement = document.getElementById('message-input') as HTMLInputElement;
+    const message = inputElement.value;
+    
+    if (message.trim() !== '') {
+      const success = sendMessageToGameSession(message);
+      if (success) {
+        inputElement.value = '';
+      } else {
+        console.error('Failed to send message: socket not authenticated');
+      }
+    }
+  };
+
+  // In the startWebSocket function, make it awaitable:
+  const startWebSocket = async (token: string, userId: string, gameSessionId: string) => {
+    try {
+      await connectToGameSession(token, userId, gameSessionId);
+      console.log('WebSocket connected and authenticated');
+      listenToGameSessionEvents(onChatMessage);
+    } catch (error) {
+      console.error('Error al iniciar WebSocket:', error);
+    }
+  };
+
+  const onChatMessage = (senderId: string, messageContent: string) => {
+    const timestamp = new Date().toLocaleTimeString('es-ES', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+    const newMessage: ChatMessage = {
+      id: `${senderId}-${Date.now()}`,
+      senderId,
+      messageContent,
+      timestamp
+    };
+    setChatMessages(prev => [...prev, newMessage]);
+  };
+
+
 
   const loadCampaignData = async () => {
     if (!user || !accessToken) return;
@@ -330,71 +411,26 @@ export default function CampaignDetailsPage() {
               </h3>
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')]">
-              <div className="text-center my-4">
-                <span className="bg-gray-200 text-gray-600 text-[10px] uppercase font-bold px-2 py-1 rounded-full">Session Started</span>
-              </div>
-              {/* Mensajes de ejemplo */}
-              <div className="flex gap-2 items-start">
-                <div className="w-8 h-8 rounded bg-gray-800 border border-gray-600 shrink-0 overflow-hidden">
-                  <Image 
-                  className="w-full h-full object-cover" 
-                  src="/images/Avatar1.png" 
-                  width={32} 
-                  height={32} 
-                  alt="avatar" />
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')]" ref={chatContainerRef}>
+              {chatMessages.length === 0 ? (
+                <div className="text-center my-4">
+                  <span className="bg-gray-200 text-gray-600 text-[10px] uppercase font-bold px-2 py-1 rounded-full">Session Started</span>
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xs font-bold text-[#0b87da]">Dwarf Cleric</span>
-                    <span className="text-[10px] text-gray-400">10:42 AM</span>
+              ) : (
+                <>
+                  <div className="text-center my-4">
+                    <span className="bg-gray-200 text-gray-600 text-[10px] uppercase font-bold px-2 py-1 rounded-full">Session Started</span>
                   </div>
-                  <p className="text-sm text-gray-800 leading-snug">Reviso la puerta en busca de trampas.</p>
-                </div>
-              </div>
-              <div className="ml-10 bg-gray-100 rounded border border-gray-200 p-2">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-bold text-gray-600 uppercase">Investigación</span>
-                  <span className="text-xs font-bold text-gray-400">DC 12</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="material-icons text-purple-600 text-sm">casino</span>
-                  <span className="font-bold text-lg text-purple-700">15</span>
-                  <span className="text-xs text-green-600 font-bold uppercase">(Éxito)</span>
-                </div>
-              </div>
-              <div className="flex gap-2 items-start">
-                <div className="w-8 h-8 rounded-full bg-black border border-gray-600 shrink-0 flex items-center justify-center text-white text-[10px] font-bold">DM</div>
-                <div className="flex-1">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xs font-bold text-red-600">DM</span>
-                    <span className="text-[10px] text-gray-400">10:44 AM</span>
-                  </div>
-                  <p className="text-sm text-gray-800 leading-snug italic">El mecanismo hace clic suavemente. Parece seguro abrirla.</p>
-                </div>
-              </div>
-              <div className="flex gap-2 items-start">
-                <div className="w-8 h-8 rounded bg-gray-800 border border-gray-600 shrink-0 overflow-hidden">
-                  <Image 
-                    className="w-full h-full object-cover" 
-                    src="/images/Avatar1.png" 
-                    width={32} 
-                    height={32} 
-                    alt="avatar" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xs font-bold text-[#0b87da]">Resonick</span>
-                    <span className="text-[10px] text-gray-400">10:45 AM</span>
-                  </div>
-                  <p className="text-sm text-gray-800 leading-snug">¡Por fin! La abro de una patada.</p>
-                </div>
-              </div>
+                  {chatMessages.map((msg) => (
+                    <ChatMessageComponent key={msg.id} message={msg} />
+                  ))}
+                </>
+              )}
             </div>
             <div className="p-3 bg-white border-t border-gray-200">
               <div className="relative">
-                <input className="w-full bg-gray-100 border-none rounded-full py-2 pl-4 pr-10 text-sm focus:ring-1 focus:ring-[#0b87da] placeholder-gray-500" placeholder="Escribe un mensaje..." type="text" />
-                <button className="absolute right-1 top-1 p-1 text-[#0b87da] hover:text-[#0866a8] transition rounded-full">
+                <input id="message-input" className="w-full bg-gray-100 border-none rounded-full py-2 pl-4 pr-10 text-sm focus:ring-1 focus:ring-[#0b87da] placeholder-gray-500" placeholder="Escribe un mensaje..." type="text" />
+                <button onClick={sendSessionMessage} className="absolute right-1 top-1 p-1 text-[#0b87da] hover:text-[#0866a8] transition rounded-full">
                   <span className="material-icons text-lg">send</span>
                 </button>
               </div>
