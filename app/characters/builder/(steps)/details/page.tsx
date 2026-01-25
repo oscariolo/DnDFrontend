@@ -81,7 +81,7 @@ export default function DetailsPage() {
   };
 
   return (
-    <div className="p-8 min-h-screen bg-gray-50">
+    <div className="p-8 min-h-screen bg-gray-50/50">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold mb-2 text-center text-gray-800">Detalles del personaje</h1>
         <p className="text-lg mb-8 text-gray-600 text-center">

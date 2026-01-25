@@ -113,14 +113,14 @@ export default function BaseItemsPage() {
 
   if (loading) {
     return (
-      <div className="p-8 min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="p-8 min-h-screen bg-gray-50/50 flex items-center justify-center">
         <div className="text-2xl font-semibold text-gray-700">Cargando...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 min-h-screen bg-gray-50">
+    <div className="p-8 min-h-screen bg-gray-50/50">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold text-center mb-2 text-gray-800">
           Herramientas y Habilidades

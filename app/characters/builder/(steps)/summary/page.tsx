@@ -8,6 +8,7 @@ import { CustomCharacter, DescriptionContent } from "@/app/lib/models/characterm
 import { mockClasses } from "@/app/lib/consts/mockClasses";
 import { getFullRaceData, createCharacter } from "@/app/lib/services/characterServices";
 import { useAuth } from "@/app/lib/context/AuthContext";
+import { addPendingCharacter } from "@/app/lib/utils/db";
 
 export default function SummaryPage() {
   const router = useRouter();
@@ -61,11 +62,19 @@ export default function SummaryPage() {
       characterDescription: character.description?.backstory || "",
       attributes: character.currentAttributes,
       characterClass: character.class,
+      race: character.race,
       skills: character.skills?.map(s => s.name) || [],
       inventoryItems: character.startItems?.map(i => i.name) || [],
     };
 
     try {
+      if (!navigator.onLine) {
+        await addPendingCharacter(backendCharacter);
+        alert("Estás sin conexión. El personaje se guardó localmente y se subirá cuando recuperes conexión.");
+        localStorage.removeItem("customCharacter");
+        router.push("/characters");
+        return;
+      }
       await createCharacter(backendCharacter, accessToken);
       localStorage.removeItem("customCharacter");
       alert("¡Personaje creado exitosamente!");
@@ -93,14 +102,14 @@ export default function SummaryPage() {
 
   if (!character) {
     return (
-      <div className="p-8 min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="p-8 min-h-screen bg-gray-50/50 flex items-center justify-center">
         <div className="text-2xl font-semibold text-gray-700">Cargando...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 min-h-screen bg-gray-50">
+    <div className="p-8 min-h-screen bg-gray-50/50">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold text-center mb-2 text-gray-800">
           Resumen de características
