@@ -151,7 +151,7 @@ export default function ZoneCreationPage() {
   };
 
   const handleContinue = async () => {
-    if (isLoading) return; // Evita envíos múltiples
+    if (isLoading) return;
 
     if (zones.length === 0) {
       alert("Por favor crea al menos una zona para la campaña");
@@ -232,7 +232,6 @@ export default function ZoneCreationPage() {
       };
 
       if (!navigator.onLine) {
-        // Guardar en IndexedDB si está offline
         await addPendingCampaign(campaignData, allFiles);
         alert("Estás sin conexión. Tu campaña se guardó localmente y se subirá cuando recuperes conexión.");
         setIsLoading(false);
@@ -240,7 +239,16 @@ export default function ZoneCreationPage() {
         return;
       }
 
-      await uploadCampaign(campaignData, allFiles, accessToken);
+      // Intentar subir la campaña
+      try {
+        await uploadCampaign(campaignData, allFiles, accessToken);
+      } catch (error) {
+        await addPendingCampaign(campaignData, allFiles);
+        alert("No se pudo conectar con el servidor. Tu campaña se guardó localmente y se subirá cuando recuperes conexión.");
+        setIsLoading(false);
+        router.push("/campaign");
+        return;
+      }
 
       localStorage.removeItem("campaignBasicInfo");
       localStorage.removeItem("campaignZones");
@@ -248,13 +256,8 @@ export default function ZoneCreationPage() {
       alert("¡Campaña creada exitosamente!");
       router.push("/campaign");
     } catch (error: any) {
-      if (error.message.includes('sesión ha expirado')) {
-        alert(error.message);
-        router.push('/auth');
-      } else {
-        alert("Error al crear la campaña. Intenta de nuevo.");
-        console.error(error);
-      }
+      alert("Error al crear la campaña. Intenta de nuevo.");
+      console.error(error);
     } finally {
       setIsLoading(false); // Oculta el loader
     }
