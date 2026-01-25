@@ -80,7 +80,7 @@ export default function CampaignInvitePage() {
       // TODO: Fetch base campaign details from backend
       // For now, using mock data
       setCampaign({
-        id: session.id,
+        id: session._id,
         name: 'Campaign Name', // Should fetch from baseCampaignId
         description: 'Campaign description',
         dm: 'Dungeon Master',
