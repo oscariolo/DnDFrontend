@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getAllCampaigns } from "../lib/services/campaingServices";
 import { urlToFile, saveZoneImage } from "@/app/lib/utils/db";
+import { syncPendingCampaigns } from "@/app/lib/utils/sync"; // Asegúrate de importar bien
 
 const DEFAULT_IMG = "/images/campaign1.jpg";
 
@@ -17,6 +18,13 @@ export default function CampaignPage() {
 
   useEffect(() => {
     getAllCampaigns().then(setCommunityCampaigns).catch(() => setCommunityCampaigns([]));
+  }, []);
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken) {
+      syncPendingCampaigns(accessToken);
+    }
   }, []);
 
   const fantasyGradientText = "bg-clip-text text-transparent bg-gradient-to-r from-black via-gray-900 to-black";
