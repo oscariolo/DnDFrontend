@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { loginUser, registerUser, logoutUser, AuthResponse, User } from '../services/authService';
+import { setApiTokens, clearApiTokens } from '@/app/lib/utils/apiFetch';
 
 interface AuthContextType {
   user: User | null;
@@ -40,6 +41,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAccessToken(savedAccessToken);
         setRefreshToken(savedRefreshToken);
         setUser(parsedUser);
+        // sync apiFetch in-memory token
+        try {
+          setApiTokens(savedAccessToken, savedRefreshToken || undefined);
+        } catch (e) {
+          // ignore in non-browser env
+        }
       } catch (err) {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
@@ -62,6 +69,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('refreshToken', response.refreshToken);
     }
     localStorage.setItem('user', JSON.stringify(response.user));
+    try {
+      setApiTokens(response.accessToken, response.refreshToken || undefined);
+    } catch (e) {
+      // ignore
+    }
   };
 
   const logout = async () => {
@@ -79,6 +91,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    try {
+      clearApiTokens();
+    } catch (e) {
+      // ignore
+    }
   };
 
   const register = async (userData: {
@@ -109,6 +126,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       'Authorization': `Bearer ${accessToken}`,
     };
   };
+
+  // keep context tokens in sync with apiFetch refreshes
+  useEffect(() => {
+    function handler(e: Event) {
+      try {
+        const ce = e as CustomEvent;
+        const { accessToken: a, refreshToken: r } = ce.detail || {};
+        setAccessToken(a || null);
+        setRefreshToken(r || null);
+        if (!a) {
+          setUser(null);
+          localStorage.removeItem('user');
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+
+    window.addEventListener('tokensUpdated', handler as EventListener);
+    return () => window.removeEventListener('tokensUpdated', handler as EventListener);
+  }, []);
 
   return (
     <AuthContext.Provider

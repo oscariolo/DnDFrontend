@@ -23,19 +23,18 @@ export interface JoinSessionRequest {
   userId: string;
 }
 
-const GAME_SESSION_BASE_API = `${BACKEND_URL}/api/game-sessions`;
+import { apiFetch } from '@/app/lib/utils/apiFetch';
+
+const GAME_SESSION_BASE_API = `/api/game-sessions`;
 
 export async function createGameSession(
   data: CreateGameSessionRequest,
-  token: string
+  token?: string
 ): Promise<CampaignRun> {
-  const response = await fetch(`${GAME_SESSION_BASE_API}`, {
+  const response = await apiFetch(`${GAME_SESSION_BASE_API}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
     body: JSON.stringify(data),
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 
   if (!response.ok) {
@@ -51,12 +50,10 @@ export async function createGameSession(
   return sessionData;
 }
 
-export async function getGameSession(sessionId: string, token: string): Promise<CampaignRun> {
-  const response = await fetch(`${GAME_SESSION_BASE_API}/${sessionId}`, {
+export async function getGameSession(sessionId: string, token?: string): Promise<CampaignRun> {
+  const response = await apiFetch(`${GAME_SESSION_BASE_API}/${sessionId}`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 
   if (!response.ok) {
@@ -75,11 +72,9 @@ export async function getGameSession(sessionId: string, token: string): Promise<
 
 export async function getUserGameSessions(userId: string, token: string): Promise<CampaignRun[]> {
   try {
-    const response = await fetch(`${GAME_SESSION_BASE_API}/player/${userId}`, {
+    const response = await apiFetch(`${GAME_SESSION_BASE_API}/player/${userId}`, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
 
     if (response.status === 404) {
@@ -105,19 +100,16 @@ export async function addCharacterToSession(
   sessionId: string,
   characterId: string,
   playerId: string,
-  token: string
+  token?: string
 ): Promise<CampaignRun> {
-  const response = await fetch(`${BACKEND_URL}/api/campaigns/game/character`, {
+  const response = await apiFetch(`/api/campaigns/game/character`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
     body: JSON.stringify({
       gameId: sessionId,
       characterId,
       playerId,
     }),
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 
   if (!response.ok) {
