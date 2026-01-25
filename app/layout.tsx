@@ -91,7 +91,7 @@ export default function RootLayout({
           </header>
 
           {/* Menu */}
-          <Menu className="relative z-10"/>
+          <Menu className="relative z-[1000]"/>
 
           {/* Main content (flex: 1 to push footer down) */}
           <main className="relative z-10" style={{ flex: 1 }}>

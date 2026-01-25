@@ -2,7 +2,7 @@ import { ApolloClient, InMemoryCache, gql, HttpLink } from '@apollo/client';
 import { RaceDetails } from '../models/charactermodel';
 
 const GRAPHQL_URL = "https://www.dnd5eapi.co/graphql/2014";
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
 
 const client = new ApolloClient({
   link: new HttpLink({

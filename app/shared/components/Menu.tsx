@@ -20,6 +20,10 @@ export default function Menu({ className = '' }: { className?: string }) {
     }
   });
 
+  // NUEVO: Estado para saber si ya está montado en cliente
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   useEffect(() => {
     try {
       localStorage.setItem('menuOpen', String(open));
@@ -69,50 +73,55 @@ export default function Menu({ className = '' }: { className?: string }) {
           <div className="md:hidden w-7" />
         </div>
       </div>
-      <div
-        className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-200 md:hidden ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-        onClick={() => setOpen(false)}
-        aria-hidden={!open}
-      />
 
-      <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-[#26282A] backdrop-blur-md z-50 transform transition-transform duration-300 md:hidden ${
-          open ? 'translate-x-0' : '-translate-x-full'
-        }`}
-        aria-hidden={!open}
-      >
-        <div className="h-16 flex items-center px-4">
-          <button
-            aria-label="Close menu"
+      {/* SOLO renderiza el menú móvil si está montado en cliente */}
+      {mounted && (
+        <>
+          <div
+            className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-200 md:hidden ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
             onClick={() => setOpen(false)}
-            className="p-3 rounded-md text-white hover:bg-white/6 focus:outline-none"
+            aria-hidden={!open}
+          />
+          <aside
+            className={`fixed top-0 left-0 h-full w-72 bg-[#26282A] backdrop-blur-md z-50 transform transition-transform duration-300 md:hidden ${
+              open ? 'translate-x-0' : '-translate-x-full'
+            }`} 
+            aria-hidden={!open}
           >
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </button>
-        </div>
-
-        <nav className="px-4 mt-2 flex flex-col gap-2.5" aria-label="Mobile">
-          {MENU_ITEMS.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
+            <div className="h-16 flex items-center px-4">
+              <button
+                aria-label="Close menu"
                 onClick={() => setOpen(false)}
-                aria-current={active ? 'page' : undefined}
-                className={
-                  `px-4 py-3 rounded-md text-lg font-semibold transition-colors duration-150 ` +
-                  (active ? 'bg-white/6 text-white' : 'text-white hover:bg-white/6')
-                }
+                className="p-3 rounded-md text-white hover:bg-white/6 focus:outline-none"
               >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </aside>
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              </button>
+            </div>
+
+            <nav className="px-4 mt-2 flex flex-col gap-2.5" aria-label="Mobile">
+              {MENU_ITEMS.map((item) => {
+                const active = isActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    aria-current={active ? 'page' : undefined}
+                    className={
+                      `px-4 py-3 rounded-md text-lg font-semibold transition-colors duration-150 ` +
+                      (active ? 'bg-white/6 text-white' : 'text-white hover:bg-white/6')
+                    }
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </aside>
+        </>
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
 
 export interface CampaignRun {
   _id: string;
@@ -50,6 +50,7 @@ export async function createGameSession(
 
   return sessionData;
 }
+
 export async function getGameSession(sessionId: string, token: string): Promise<CampaignRun> {
   const response = await fetch(`${GAME_SESSION_BASE_API}/${sessionId}`, {
     method: 'GET',
@@ -71,6 +72,7 @@ export async function getGameSession(sessionId: string, token: string): Promise<
 
   return data;
 }
+
 export async function getUserGameSessions(userId: string, token: string): Promise<CampaignRun[]> {
   try {
     const response = await fetch(`${GAME_SESSION_BASE_API}/player/${userId}`, {
@@ -98,6 +100,7 @@ export async function getUserGameSessions(userId: string, token: string): Promis
     return [];
   }
 }
+
 export async function addCharacterToSession(
   sessionId: string,
   characterId: string,
@@ -123,6 +126,7 @@ export async function addCharacterToSession(
 
   return response.json();
 }
+
 export async function addPlayerToSession(
   sessionId: string,
   playerId: string,
@@ -145,6 +149,7 @@ export async function addPlayerToSession(
   }
 
   return response.json();
+
 }
 export function generateInviteToken(sessionId: string): string {
   const data = JSON.stringify({
@@ -153,6 +158,7 @@ export function generateInviteToken(sessionId: string): string {
   });
   return btoa(data).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
+
 export function decodeInviteToken(token: string): { sessionId: string; timestamp: number } | null {
   try {
     const base64 = token.replace(/-/g, '+').replace(/_/g, '/');
