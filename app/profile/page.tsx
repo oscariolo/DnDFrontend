@@ -195,12 +195,6 @@ export default function ProfilePage() {
                         <span className="font-bold text-lg">{char.name}</span>
                       </div>
                       <span className="text-gray-500 text-sm mb-4">{char.race || "Sin raza"} - {char.characterClass || "Sin clase"}</span>
-                      <Link
-                        href={`/characters/builder/summary?id=${char.id}`}
-                        className="mt-auto inline-block px-4 py-2 bg-[#e40712] text-white rounded-lg font-semibold hover:bg-[#b3060e] transition"
-                      >
-                        Ver detalles
-                      </Link>
                     </div>
                   ))}
                 </div>

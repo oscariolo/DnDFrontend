@@ -98,7 +98,7 @@ async function getCharactersFromIndexedDB() {
 
 export default function CharactersPage() {
     const [characters, setCharacters] = useState<any[]>([]);
-    const [visibleCharacters, setVisibleCharacters] = useState(0);
+    const [visibleCharacters, setVisibleCharacters] = useState(3);
     const { user, accessToken, isAuthenticated } = useAuth();
     const [noMore, setNoMore] = useState(false);
     const createCharRef = useRef<HTMLDivElement>(null);
