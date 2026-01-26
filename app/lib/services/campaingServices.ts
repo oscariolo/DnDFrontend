@@ -1,8 +1,8 @@
-// const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
+import { apiFetch } from '@/app/lib/utils/apiFetch';
 
 export async function getAllCampaigns() {
-  const res = await fetch(`${BACKEND_URL}/api/campaigns`);
+  const res = await apiFetch(`/api/campaigns`);
   if (!res.ok) throw new Error('Error al obtener campañas');
   return res.json();
 }
@@ -13,7 +13,7 @@ export async function getCampaignsByUserId(userId: string, accessToken?: string)
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
 
-  const res = await fetch(`${BACKEND_URL}/api/campaigns/user/${userId}`, { headers });
+  const res = await apiFetch(`/api/campaigns/user/${userId}`, { headers });
   
   if (!res.ok) {
     const errorText = await res.text();
@@ -39,7 +39,7 @@ export async function uploadCampaign(campaignDetails: any, files: File[], access
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
 
-  const res = await fetch(`${BACKEND_URL}/api/campaigns/upload`, {
+  const res = await apiFetch(`/api/campaigns/upload`, {
     method: 'POST',
     headers,
     body: formData,
@@ -48,12 +48,18 @@ export async function uploadCampaign(campaignDetails: any, files: File[], access
   if (res.status === 401) {
     throw new Error('Tu sesión ha expirado. Por favor, inicia sesión de nuevo.');
   }
-  
+
   if (!res.ok) {
     throw new Error('Error al subir campaña');
   }
-  
-  return res.json();
+  try {
+    const text = await res.text();
+    if (!text) return null;
+    return JSON.parse(text);
+  } catch (e) {
+    console.error('Error parsing upload response:', e);
+    return null;
+  }
 }
 
 export async function getCampaignById(campaignId: string, accessToken?: string) {
@@ -62,7 +68,7 @@ export async function getCampaignById(campaignId: string, accessToken?: string) 
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
 
-  const res = await fetch(`${BACKEND_URL}/api/campaigns/${campaignId}`, { headers });
+  const res = await apiFetch(`/api/campaigns/${campaignId}`, { headers });
   
   if (!res.ok) {
     const errorText = await res.text();

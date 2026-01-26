@@ -1,4 +1,5 @@
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
+import { apiFetch } from '@/app/lib/utils/apiFetch';
 
 export interface LoginRequest {
   username: string;
@@ -30,11 +31,8 @@ export interface AuthResponse {
 
 export async function loginUser(credentials: LoginRequest): Promise<AuthResponse> {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+    const response = await apiFetch(`/api/auth/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({
         emailOrUsername: credentials.username,
         password: credentials.password,
@@ -73,11 +71,8 @@ export async function loginUser(credentials: LoginRequest): Promise<AuthResponse
 
 export async function registerUser(data: RegisterRequest): Promise<AuthResponse> {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/users/register`, {
+    const response = await apiFetch(`/api/users/register`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(data),
     });
 
@@ -97,12 +92,9 @@ export async function registerUser(data: RegisterRequest): Promise<AuthResponse>
 
 export async function logoutUser(token: string): Promise<void> {
   try {
-    await fetch(`${BACKEND_URL}/api/users/logout`, {
+    await apiFetch(`/api/users/logout`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
   } catch (error) {
     console.error('Logout error:', error);
@@ -115,13 +107,34 @@ export async function authenticatedFetch(
   accessToken: string
 ): Promise<Response> {
   const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${accessToken}`,
-    ...options.headers,
+    ...(options.headers || {}),
+    Authorization: `Bearer ${accessToken}`,
   };
 
-  return fetch(url, {
-    ...options,
-    headers,
-  });
+  return apiFetch(url, { ...options, headers });
+}
+
+export async function refreshAuth(refreshToken: string): Promise<{ accessToken: string; refreshToken?: string; expiresIn?: number; }> {
+  try {
+    const response = await apiFetch(`/api/auth/refresh`, {
+      method: 'POST',
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+      throw new Error(err.message || 'Refresh failed');
+    }
+
+    const json = await response.json();
+    const data = (json && json.data) ? json.data : json;
+
+    return {
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      expiresIn: data.expiresIn,
+    };
+  } catch (error) {
+    throw error;
+  }
 }

@@ -1,5 +1,6 @@
 import { ApolloClient, InMemoryCache, gql, HttpLink } from '@apollo/client';
 import { RaceDetails } from '../models/charactermodel';
+import { apiFetch } from '@/app/lib/utils/apiFetch';
 
 const GRAPHQL_URL = "https://www.dnd5eapi.co/graphql/2014";
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
@@ -147,7 +148,7 @@ export async function createCharacter(characterData: any, accessToken?: string) 
   }
 
   try {
-    const res = await fetch(`${BACKEND_URL}/api/characters`, {
+    const res = await apiFetch(`/api/characters`, {
       method: 'POST',
       headers,
       body: JSON.stringify(characterData),
@@ -166,14 +167,13 @@ export async function createCharacter(characterData: any, accessToken?: string) 
 }
 
 export async function getAllCharacters() {
-  const res = await fetch(`${BACKEND_URL}/api/characters`, {
-  });
+  const res = await apiFetch(`/api/characters`);
   if (!res.ok) throw new Error('Error al obtener personajes');
   return res.json();
 }
 
 export async function getAllPlayableCharacters(accessToken: string) {
-  const res = await fetch(`${BACKEND_URL}/api/characters/playable`, {
+  const res = await apiFetch(`/api/characters/playable`, {
     headers: {
       'Authorization': `Bearer ${accessToken}`,
     },
@@ -183,7 +183,7 @@ export async function getAllPlayableCharacters(accessToken: string) {
 }
 
 export async function getAllCharactersByUserId(userId: string, accessToken: string) {
-  const res = await fetch(`${BACKEND_URL}/api/characters/user/${userId}`, {
+  const res = await apiFetch(`/api/characters/user/${userId}`, {
     headers: {
       'Authorization': `Bearer ${accessToken}`,
     },
