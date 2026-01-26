@@ -15,6 +15,7 @@ export interface CreateGameSessionRequest {
   baseCampaignId: string;
   dungeonMasterId: string;
   playerIds?: string[];
+  status: 'active';
 }
 
 export interface JoinSessionRequest {

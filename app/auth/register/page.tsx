@@ -24,7 +24,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 px-4">
+    <main className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-900 to-gray-800 px-4">
       <div className="w-full flex flex-col items-center">
         <h1 className="text-4xl font-bold text-white mb-8">D&D Campaign Manager</h1>
         <RegisterForm />

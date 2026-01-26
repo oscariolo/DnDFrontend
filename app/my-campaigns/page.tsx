@@ -26,6 +26,7 @@ export default function MyCampaignsPage() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
+  
 
   useEffect(() => {
     if (isAuthenticated && user && accessToken) {
@@ -45,17 +46,17 @@ export default function MyCampaignsPage() {
       const mappedSessions: GameSession[] = sessions.map((session: any) => {
         const campaign = userCampaigns.find((c: any) => c.id === session.baseCampaignId);
         const isDM = session.dungeonMasterId === user.id || 
-                     (campaign && campaign.dungeonMasterId === user.id);
+                    (campaign && campaign.dungeonMasterId === user.id);
         
         return {
-          id: session.id,
+          id: session._id,
           baseCampaignId: session.baseCampaignId,
           campaignName: campaign?.name || 'Unknown Campaign',
-          startDate: new Date().toLocaleDateString(),
+          startDate: session.startedAt ? new Date(session.startedAt).toLocaleDateString() : '',
           playerIds: session.playerIds || [],
           role: isDM ? 'Dungeon Master' : 'Player',
           status: session.status || 'waiting',
-          inviteLink: isDM ? getInviteLink(session.id) : undefined,
+          inviteLink: isDM ? getInviteLink(session._id) : undefined,
           dungeonMasterId: session.dungeonMasterId,
         };
       });
@@ -77,7 +78,8 @@ export default function MyCampaignsPage() {
         {
           baseCampaignId: campaignId,
           dungeonMasterId: user.id,
-          playerIds: [],
+          playerIds: [user.id],
+          status: 'active',
         },
         accessToken
       );
@@ -114,6 +116,10 @@ export default function MyCampaignsPage() {
   // Campañas activas y no activas
   const activeSessions = gameSessions.filter((s) => s.status === 'active' || s.status === 'waiting');
   const endedSessions = gameSessions.filter((s) => s.status === 'ended');
+
+  // Campañas del usuario que NO tienen sesión activa
+  const campaignIdsWithSession = new Set(gameSessions.map(s => s.baseCampaignId));
+  const campaignsWithoutSession = campaigns.filter(c => !campaignIdsWithSession.has(c.id));
 
   return (
     <div className="font-body bg-[#fdfcf9] min-h-screen text-[#242527]">

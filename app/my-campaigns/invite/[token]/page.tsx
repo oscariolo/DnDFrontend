@@ -7,6 +7,7 @@ import { MdPerson2, MdAdd, MdShield, MdCheck } from "react-icons/md";
 import { useAuth } from "@/app/lib/context/AuthContext";
 import { decodeInviteToken, getGameSession, joinGameSession } from "@/app/lib/services/gameSessionService";
 import { getAllCharactersByUserId } from "@/app/lib/services/characterServices";
+import Link from "next/dist/client/link";
 
 interface Campaign {
   id: string;
@@ -275,8 +276,10 @@ export default function CampaignInvitePage() {
               <div className="w-16 h-16 rounded-full bg-[#1fadad]/40 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <MdAdd className="text-3xl" /> 
               </div>
-              <span className="font-display font-bold text-lg">Crear Nuevo</span>
-              <span className="text-xs mt-2 text-center max-w-[150px]">Forja un nuevo héroe para esta aventura</span>
+              <Link href="/characters/builder/class">
+                <span className="font-display font-bold text-lg">Crear Nuevo</span>
+                <span className="text-xs mt-2 text-center max-w-[150px]">Forja un nuevo héroe para esta aventura</span>
+              </Link>
             </button>
           </div>
         </div>
