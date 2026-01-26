@@ -6,7 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { getAllCharacters, getAllCharactersByUserId } from "../lib/services/characterServices";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../lib/context/AuthContext";
-import { saveCharactersToDB, getCharacterFromDB } from "../lib/utils/db";
+import { saveCharactersToDB, getCharacterFromDB, getDbPromise } from "../lib/utils/db";
+import { syncPendingCharacters } from "@/app/lib/utils/sync";
 
 function mapAttributes(attributes: any) {
     if (!attributes) return [];
@@ -80,6 +81,21 @@ const handleEditCharacter = async (
     }
 };
 
+async function getCharactersFromIndexedDB() {
+    const db = await getDbPromise();
+    const allChars = await db.getAll('characters');
+    return allChars.map((char: any) => ({
+        id: char.id,
+        name: char.name,
+        creatorId: char.creatorId ? String(char.creatorId) : "",
+        creatorName: char.creatorId || char.creatorName,
+        story: char.characterDescription,
+        attributes: mapAttributes(char.attributes),
+        img: "/images/placeholdercharacter.png",
+        raw: char,
+    }));
+}
+
 export default function CharactersPage() {
     const [characters, setCharacters] = useState<any[]>([]);
     const [visibleCharacters, setVisibleCharacters] = useState(0);
@@ -91,24 +107,21 @@ export default function CharactersPage() {
     const [active, setActive] = useState<boolean[]>(characters.map(() => false));
 
     useEffect(() => {
-        if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
-        getAllCharacters()
-            .then((data) => {
-                const mapped = data.map((char: any) => ({
-                    id: char.id,
-                    name: char.name,
-					creatorId: char.creatorId ? String(char.creatorId) : "",
-                    creatorName: char.creatorId || char.creatorName,
-                    story: char.characterDescription,
-                    attributes: mapAttributes(char.attributes),
-                    img: "/images/placeholdercharacter.png",
-                    raw: char,
-                }));
-                setCharacters(mapped);
-                setVisibleCharacters(Math.min(3, mapped.length));
-                saveCharactersToDB(data);
-            })
-            .catch(() => setCharacters([]));
+        async function fetchAndStoreCharacters() {
+            try {
+                // Intenta obtener del backend y guardar en IndexedDB
+                const data = await getAllCharacters();
+                await saveCharactersToDB(data);
+            } catch (e) {
+                // Si falla, seguimos con lo que haya en IndexedDB
+            }
+            // Siempre recupera de IndexedDB para mostrar
+            const mapped = await getCharactersFromIndexedDB();
+            setCharacters(mapped);
+            setVisibleCharacters(Math.min(3, mapped.length));
+        }
+
+        fetchAndStoreCharacters();
 
         const observers: IntersectionObserver[] = [];
 
@@ -153,6 +166,17 @@ export default function CharactersPage() {
     useEffect(() => {
         setActive(characters.map(() => false));
     }, [characters]);
+
+    useEffect(() => {
+        setVisibleCharacters((prev) => Math.min(prev, characters.length));
+    }, [characters]);
+
+    useEffect(() => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (accessToken) {
+            syncPendingCharacters(accessToken);
+        }
+    }, []);
 
     const fantasyGradientText =
         "bg-clip-text text-transparent bg-gradient-to-r from-black via-gray-900 to-black";
@@ -218,7 +242,13 @@ export default function CharactersPage() {
                             Elige tu raza, clase y trasfondo. Forja un héroe único con habilidades y una historia personal.
                         </p>
                         <Link href="/characters/builder/class">
-                            <button className="mt-auto w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <button
+                                className="mt-auto w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+                                onClick={() => {
+                                    localStorage.removeItem("customCharacter");
+                                    router.push("/characters/builder/class");
+                                }}
+                            >
                                 Crear nuevo personaje
                             </button>
                         </Link>
@@ -307,7 +337,7 @@ export default function CharactersPage() {
                                                 onClick={() => handleEditCharacter(char, router, user, accessToken!)} 
                                                 className="w-[220px] md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 shadow text-center"
                                             > {/*Sabra dios porque funciona*/}
-                                                Editar personaje
+                                                Usar Personaje
                                             </button>
                                         </div>
                                     </div>
@@ -316,7 +346,7 @@ export default function CharactersPage() {
                     ))}
                     {/* Pie de Sección */}
                     <div className="text-center mt-16">
-                        {!noMore ? (
+                        {!noMore && visibleCharacters < characters.length ? (
                             <button className="text-[#e40712] hover:text-red-300 text-lg mb-8 transition-colors"
                                 onClick={handleLoadMore}
                             >

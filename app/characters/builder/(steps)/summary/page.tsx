@@ -80,7 +80,10 @@ export default function SummaryPage() {
       alert("¡Personaje creado exitosamente!");
       router.push("/characters");
     } catch (error) {
-      alert("Error al crear el personaje. Intenta de nuevo.");
+      await addPendingCharacter(backendCharacter); // <-- Opcional: guarda en cola si falla
+      localStorage.removeItem("customCharacter");
+      alert("Error al crear el personaje. Se guardó localmente y se subirá cuando recuperes conexión.");
+      router.push("/characters");
       console.error(error);
     } finally {
       setIsLoading(false);

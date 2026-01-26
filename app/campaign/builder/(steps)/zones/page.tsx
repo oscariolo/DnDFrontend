@@ -233,28 +233,30 @@ export default function ZoneCreationPage() {
 
       if (!navigator.onLine) {
         await addPendingCampaign(campaignData, allFiles);
+        localStorage.removeItem("campaignBasicInfo");
+        localStorage.removeItem("campaignZones");
         alert("Estás sin conexión. Tu campaña se guardó localmente y se subirá cuando recuperes conexión.");
         setIsLoading(false);
         router.push("/campaign");
         return;
       }
 
-      // Intentar subir la campaña
       try {
         await uploadCampaign(campaignData, allFiles, accessToken);
+        localStorage.removeItem("campaignBasicInfo");
+        localStorage.removeItem("campaignZones");
+        alert("¡Campaña creada exitosamente!");
+        router.push("/campaign");
+        return;
       } catch (error) {
         await addPendingCampaign(campaignData, allFiles);
+        localStorage.removeItem("campaignBasicInfo");
+        localStorage.removeItem("campaignZones");
         alert("No se pudo conectar con el servidor. Tu campaña se guardó localmente y se subirá cuando recuperes conexión.");
         setIsLoading(false);
         router.push("/campaign");
         return;
       }
-
-      localStorage.removeItem("campaignBasicInfo");
-      localStorage.removeItem("campaignZones");
-
-      alert("¡Campaña creada exitosamente!");
-      router.push("/campaign");
     } catch (error: any) {
       alert("Error al crear la campaña. Intenta de nuevo.");
       console.error(error);

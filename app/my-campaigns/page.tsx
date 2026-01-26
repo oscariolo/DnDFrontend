@@ -104,8 +104,12 @@ export default function MyCampaignsPage() {
 
   // Simula crear una campaña
   const handleCreateCampaign = () => {
-    router.push('/campaign/builder');
+    router.push('/campaign/builder/basicInfo');
   };
+
+  const handleCreateFromPrebuilt = () => {
+    router.push('/campaign#destacados');
+  }
 
   // Campañas activas y no activas
   const activeSessions = gameSessions.filter((s) => s.status === 'active' || s.status === 'waiting');
@@ -153,7 +157,7 @@ export default function MyCampaignsPage() {
             </button>
             <button
               className="bg-[#e40712] hover:bg-red-700 text-white font-bold py-3 px-8 rounded text-lg uppercase transition"
-              onClick={handleCreateCampaign}
+              onClick={handleCreateFromPrebuilt}
             >
               Crear Desde Campañas Prediseñadas
             </button>

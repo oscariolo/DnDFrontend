@@ -27,6 +27,16 @@ export default function CampaignPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash === "#destacados") {
+      const el = document.getElementById("destacados");
+      if (el) {
+        const y = el.getBoundingClientRect().top + window.scrollY - 120;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+    }
+  }, []);
+
   const fantasyGradientText = "bg-clip-text text-transparent bg-gradient-to-r from-black via-gray-900 to-black";
 
   const scrollToCreateCampaign = () => {
@@ -135,9 +145,14 @@ export default function CampaignPage() {
               Diseña mundos épicos, tramas intrigantes y desafíos mortales. Conviértete en el Dungeon Master que guía la historia y da vida a la aventura para tus jugadores.
             </p>
             <Link href="/campaign/builder/basicInfo">
-              <button className="mt-auto w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              <button className="mt-auto w-full md:w-auto bg-[#e40712] hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+                onClick={() => {
+                  localStorage.removeItem("campaignBasicInfo");
+                  router.push("/campaign/builder/basicInfo");
+                }}
+              >
                 Empezar Nueva Campaña
-              </button>
+              </button> 
             </Link>
           </div>
         </div>
@@ -146,7 +161,7 @@ export default function CampaignPage() {
       {/* El resto del contenido sí va dentro del container */}
       <div className="container mx-auto px-4 py-1 max-w-7xl">
         {/* Carrusel de campañas de la comunidad */}
-        <section className="mb-10">
+        <section id="destacados" className="mb-10">
           <h2 className="text-3xl font-bold mb-10 text-center">Campañas de la Comunidad</h2>
           <div className="relative">
             <div
