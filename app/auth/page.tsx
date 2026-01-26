@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/app/lib/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import LoginForm from '@/app/components/LoginForm';
 
@@ -9,11 +9,14 @@ export default function AuthPage() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
+  const searchParams = useSearchParams();
+
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push('/profile');
+      const returnTo = searchParams?.get('returnTo');
+      router.push(returnTo || '/profile');
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, router, searchParams]);
 
   if (isLoading) {
     return (

@@ -5,11 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import { MdSync, MdHistoryEdu } from "react-icons/md";
 import { useAuth } from "@/app/lib/context/AuthContext";
 import { getGameSession } from "@/app/lib/services/gameSessionService";
-import { connectToGameSession, listenToGameSessionEvents, sendMessageToGameSession } from "@/app/lib/services/socketService";
+import { connectToGameSession, listenToGameSessionEvents, sendMessageToGameSession, disconnectFromGameSession } from "@/app/lib/services/socketService";
+import { getUserById } from '@/app/lib/services/userService';
 
 interface ChatMessage {
   id: string;
   senderId: string;
+  senderName?: string;
   messageContent: string;
   timestamp: string;
 }
@@ -18,11 +20,11 @@ function ChatMessageComponent({ message }: { message: ChatMessage }) {
   return (
     <div className="flex gap-2 items-start">
       <div className="w-8 h-8 rounded bg-gray-800 border border-gray-600 shrink-0 flex items-center justify-center text-white text-[10px] font-bold overflow-hidden">
-        {message.senderId.substring(0, 2).toUpperCase()}
-      </div>
+          {(message.senderName || message.senderId).substring(0, 2).toUpperCase()}
+        </div>
       <div className="flex-1">
         <div className="flex items-baseline justify-between">
-          <span className="text-xs font-bold text-[#0b87da]">{message.senderId}</span>
+          <span className="text-xs font-bold text-[#0b87da]">{message.senderName || message.senderId}</span>
           <span className="text-[10px] text-gray-400">{message.timestamp}</span>
         </div>
         <p className="text-sm text-gray-800 leading-snug">{message.messageContent}</p>
@@ -39,7 +41,9 @@ export default function WaitForDMPage() {
   const sessionId = params.mycampaignid as string;
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const sessionJsonRef = useRef<string>('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [playersReady, setPlayersReady] = useState<number>(0);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,18 +51,53 @@ export default function WaitForDMPage() {
       router.push('/auth');
       return;
     }
-    
+    // connect websocket and listen for player join/leave and session-started events
+    startWebSocket(accessToken, user.id, sessionId,
+      (senderId, message) => onChatMessage(senderId, message),
+      (data: any) => {
+        try {
+          if (data && data.session) {
+            // dedupe playerIds
+            if (data.session.playerIds) {
+              data.session.playerIds = Array.from(new Set(data.session.playerIds));
+            }
+            setSession(data.session);
+            setPlayersReady(data.session.playerIds?.length || 0);
+          }
+        } catch (e) {
+          console.error('Error handling player-joined/session-started event', e);
+        }
+        if (data && data.session && data.session.status === 'active') {
+          router.push(`/my-campaigns/play/${sessionId}`);
+        }
+      },
+      (data: any) => {
+        try {
+          if (data && data.session) {
+            if (data.session.playerIds) {
+              data.session.playerIds = Array.from(new Set(data.session.playerIds));
+            }
+            setSession(data.session);
+            setPlayersReady(data.session.playerIds?.length || 0);
+          }
+        } catch (e) {
+          console.error('Error handling player-left event', e);
+        }
+      }
+    ).catch((e) => console.error('WS start error', e));
+
+    // initial load once
     loadSession();
-    const interval = setInterval(() => {
-      loadSession();
-    }, 5000);
-    
-    return () => clearInterval(interval);
+
+    return () => {
+      // disconnect socket on unmount to avoid leaks
+      try { disconnectFromGameSession(); } catch {}
+    };
   }, [isAuthenticated, user, accessToken, sessionId]);
 
   useEffect(() => {
-    if (!isAuthenticated || !user || !accessToken) return;
-    startWebSocket(accessToken, user.id, sessionId);
+    // redundant start removed — startup handled in primary effect
+    return;
   }, [isAuthenticated, user, accessToken, sessionId]);
 
   const loadSession = async () => {
@@ -66,7 +105,12 @@ export default function WaitForDMPage() {
     
     try {
       const sessionData = await getGameSession(sessionId, accessToken);
-      setSession(sessionData);
+      const sessionJson = JSON.stringify({ playerIds: sessionData.playerIds || [], status: sessionData.status });
+      if (sessionJsonRef.current !== sessionJson) {
+        setSession(sessionData);
+        sessionJsonRef.current = sessionJson;
+        if (sessionData.playerIds) setPlayersReady(sessionData.playerIds.length);
+      }
       if (sessionData.status === 'active') {
         router.push(`/my-campaigns/play/${sessionId}`);
       }
@@ -77,23 +121,50 @@ export default function WaitForDMPage() {
     }
   };
 
-  const startWebSocket = async (token: string, userId: string, gameSessionId: string) => {
+  const startWebSocket = async (
+    token: string,
+    userId: string,
+    gameSessionId: string,
+    onChat?: (senderId: string, messageContent: string) => void,
+    onPlayerJoined?: (data: any) => void,
+    onPlayerLeft?: (data: any) => void
+  ) => {
     try {
       await connectToGameSession(token, userId, gameSessionId);
-      listenToGameSessionEvents(onChatMessage);
+      listenToGameSessionEvents(onChat, onPlayerJoined, onPlayerLeft);
     } catch (error) {
       console.error('Error al iniciar WebSocket:', error);
+      throw error;
     }
   };
 
-  const onChatMessage = (senderId: string, messageContent: string) => {
+  const userNameCache = useRef<Record<string,string>>({});
+
+  const onChatMessage = async (senderId: string, messageContent: string) => {
     const timestamp = new Date().toLocaleTimeString('es-ES', { 
       hour: '2-digit', 
       minute: '2-digit' 
     });
+
+    let senderName: string | undefined;
+    try {
+      if (senderId === user?.id) {
+        senderName = user.username;
+      } else if (userNameCache.current[senderId]) {
+        senderName = userNameCache.current[senderId];
+      } else if (accessToken) {
+        const profile = await getUserById(senderId, accessToken);
+        senderName = profile?.username || profile?.displayName;
+        if (senderName) userNameCache.current[senderId] = senderName;
+      }
+    } catch (e) {
+      senderName = undefined;
+    }
+
     const newMessage: ChatMessage = {
       id: `${senderId}-${Date.now()}`,
       senderId,
+      senderName,
       messageContent,
       timestamp
     };
@@ -142,9 +213,11 @@ export default function WaitForDMPage() {
                 Cuando el Dungeon Master la inicie, entrarás automáticamente.
               </p>
               {session && (
-                <p className="text-xs text-[#1fadad] font-bold mt-4">
-                  Jugadores en sala: {session.playerIds?.length || 0}
-                </p>
+                <div className="mt-6 p-4 bg-[#1fadad]/10 rounded-lg border border-[#1fadad]/30">
+                  <p className="text-sm font-bold text-[#1fadad]">
+                    👥 Jugadores en sala: {playersReady}/{session.playerIds?.length || 0}
+                  </p>
+                </div>
               )}
             </div>
             <div className="flex flex-col items-center gap-3 w-full max-w-md">

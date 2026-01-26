@@ -9,7 +9,9 @@ import { useAuth } from "@/app/lib/context/AuthContext";
 import { getGameSession, getInviteLink } from "@/app/lib/services/gameSessionService";
 import { getAllCharactersByUserId } from "@/app/lib/services/characterServices";
 import { getCampaignById } from "@/app/lib/services/campaingServices";
-import { connectToGameSession, listenToGameSessionEvents, sendMessageToGameSession } from "@/app/lib/services/socketService";
+import { connectToGameSession, listenToGameSessionEvents, sendMessageToGameSession, disconnectFromGameSession } from "@/app/lib/services/socketService";
+import { apiFetch } from "@/app/lib/utils/apiFetch";
+import { getUserById } from '@/app/lib/services/userService';
 import { start } from "repl";
 
 interface Character {
@@ -27,6 +29,7 @@ interface Character {
 interface ChatMessage {
   id: string;
   senderId: string;
+  senderName?: string;
   messageContent: string;
   timestamp: string;
 }
@@ -35,12 +38,12 @@ interface ChatMessage {
 function ChatMessageComponent({ message }: { message: ChatMessage }) {
   return (
     <div className="flex gap-2 items-start">
-      <div className="w-8 h-8 rounded bg-gray-800 border border-gray-600 shrink-0 flex items-center justify-center text-white text-[10px] font-bold overflow-hidden">
-        {message.senderId.substring(0, 2).toUpperCase()}
-      </div>
+        <div className="w-8 h-8 rounded bg-gray-800 border border-gray-600 shrink-0 flex items-center justify-center text-white text-[10px] font-bold overflow-hidden">
+          {(message.senderName || message.senderId).substring(0, 2).toUpperCase()}
+        </div>
       <div className="flex-1">
         <div className="flex items-baseline justify-between">
-          <span className="text-xs font-bold text-[#0b87da]">{message.senderId}</span>
+            <span className="text-xs font-bold text-[#0b87da]">{message.senderName || message.senderId}</span>
           <span className="text-[10px] text-gray-400">{message.timestamp}</span>
         </div>
         <p className="text-sm text-gray-800 leading-snug">{message.messageContent}</p>
@@ -63,12 +66,15 @@ export default function CampaignDetailsPage() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [startingGame, setStartingGame] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const userNameCache = useRef<Record<string,string>>({});
+  const [userNameMap, setUserNameMap] = useState<Record<string,string>>({});
+  const charactersJsonRef = useRef<string>('');
+  const campaignJsonRef = useRef<string>('');
 
-  // Auto-scroll to latest message within chat container only
   useEffect(() => {
     if (chatContainerRef.current) {
-      // Scroll only the chat container, not the entire page
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chatMessages]);
@@ -81,10 +87,12 @@ export default function CampaignDetailsPage() {
     startWebSocket(accessToken, user.id, campaignId);
     loadCampaignData();
 
+    return () => {
+      try { disconnectFromGameSession(); } catch (e) {}
+    };
+
   }, [isAuthenticated, user, accessToken, campaignId]);
 
-
-  // In the sendSessionMessage function, change to:
   const sendSessionMessage = async () => {
     const inputElement = document.getElementById('message-input') as HTMLInputElement;
     const message = inputElement.value;
@@ -99,25 +107,63 @@ export default function CampaignDetailsPage() {
     }
   };
 
-  // In the startWebSocket function, make it awaitable:
   const startWebSocket = async (token: string, userId: string, gameSessionId: string) => {
     try {
       await connectToGameSession(token, userId, gameSessionId);
       console.log('WebSocket connected and authenticated');
-      listenToGameSessionEvents(onChatMessage);
+      const onPlayerJoined = async (data: any) => {
+        try {
+          await loadCampaignData();
+          if (data && data.session && data.session.status === 'active') {
+            router.push(`/my-campaigns/play/${campaignId}`);
+          }
+        } catch (e) {
+          console.error('Error handling player-joined event', e);
+        }
+      };
+
+      const onPlayerLeft = async (data: any) => {
+        try {
+          await loadCampaignData();
+        } catch (e) {
+          console.error('Error handling player-left event', e);
+        }
+      };
+
+      listenToGameSessionEvents(onChatMessage, onPlayerJoined, onPlayerLeft);
     } catch (error) {
       console.error('Error al iniciar WebSocket:', error);
     }
   };
 
-  const onChatMessage = (senderId: string, messageContent: string) => {
+  const onChatMessage = async (senderId: string, messageContent: string) => {
     const timestamp = new Date().toLocaleTimeString('es-ES', { 
       hour: '2-digit', 
       minute: '2-digit' 
     });
+
+    let senderName: string | undefined;
+    try {
+      if (senderId === user?.id) {
+        senderName = user.username;
+      } else if (userNameCache.current[senderId]) {
+        senderName = userNameCache.current[senderId];
+      } else if (accessToken) {
+        const profile = await getUserById(senderId, accessToken);
+        senderName = profile?.username || profile?.displayName;
+      if (senderName) {
+        userNameCache.current[senderId] = senderName;
+        setUserNameMap(prev => ({ ...prev, [senderId]: senderName! }));
+      }
+      }
+    } catch (e) {
+      senderName = undefined;
+    }
+
     const newMessage: ChatMessage = {
       id: `${senderId}-${Date.now()}`,
       senderId,
+      senderName,
       messageContent,
       timestamp
     };
@@ -128,29 +174,58 @@ export default function CampaignDetailsPage() {
 
   const loadCampaignData = async () => {
     if (!user || !accessToken) return;
-    
+
     try {
-      setLoading(true);
+      if (!loading) setLoading(true);
+
       const sessionData = await getGameSession(campaignId, accessToken);
-      setSession(sessionData);
+      const prevPlayerIds = session?.playerIds || [];
+      const newPlayerIds = sessionData.playerIds || [];
+      const playersChanged = prevPlayerIds.length !== newPlayerIds.length || JSON.stringify(prevPlayerIds) !== JSON.stringify(newPlayerIds);
+      const statusChanged = session?.status !== sessionData.status;
+
+      if (playersChanged || statusChanged || !session) {
+        // Ensure playerIds are unique to avoid duplicate entries in UI
+        if (sessionData.playerIds) {
+          sessionData.playerIds = Array.from(new Set(sessionData.playerIds));
+        }
+        setSession(sessionData);
+      }
+
       const link = getInviteLink(campaignId);
-      setInviteLink(link);
+      if (inviteLink !== link) setInviteLink(link);
+
       if (sessionData.baseCampaignId) {
-        const campaignData = await getCampaignById(sessionData.baseCampaignId, accessToken);
-        setCampaign({
-          name: campaignData.name || 'Unnamed Campaign',
-          description: campaignData.description || 'No description available.',
-          image: campaignData.campaignZones?.[0]?.zoneImgUrls?.[0] || '/images/DefaultCampaign.png',
-          dungeonMaster: user.username,
-        });
-      } else {
-        setCampaign({
+        if (!campaign || campaign.id !== sessionData.baseCampaignId) {
+          const campaignData = await getCampaignById(sessionData.baseCampaignId, accessToken);
+          const newCampaign = {
+            id: sessionData.baseCampaignId,
+            name: campaignData.name || 'Unnamed Campaign',
+            description: campaignData.description || 'No description available.',
+            image: campaignData.campaignZones?.[0]?.zoneImgUrls?.[0] || '/images/DefaultCampaign.png',
+            dungeonMaster: user.username,
+          };
+          const newCampaignJson = JSON.stringify(newCampaign);
+          if (campaignJsonRef.current !== newCampaignJson) {
+            setCampaign(newCampaign);
+            campaignJsonRef.current = newCampaignJson;
+          }
+        }
+      } else if (!sessionData.baseCampaignId && !campaign) {
+        const newCampaign = {
+          id: 'unknown',
           name: 'Campaign',
           description: 'No description available.',
           image: '/images/DefaultCampaign.png',
           dungeonMaster: user.username,
-        });
+        };
+        const newCampaignJson = JSON.stringify(newCampaign);
+        if (campaignJsonRef.current !== newCampaignJson) {
+          setCampaign(newCampaign);
+          campaignJsonRef.current = newCampaignJson;
+        }
       }
+
       const userChars = await getAllCharactersByUserId(user.id, accessToken);
       const mappedChars = userChars.map((char: any) => ({
         id: char.id,
@@ -163,14 +238,36 @@ export default function CampaignDetailsPage() {
         avatar: char.avatar || '/images/Avatar1.png',
         assigned: sessionData.availableCharacters?.[user.id]?.id === char.id || false,
       }));
-      
-      setCharacters(mappedChars);
+
+      const mappedCharsJson = JSON.stringify(mappedChars);
+      if (charactersJsonRef.current !== mappedCharsJson) {
+        setCharacters(mappedChars);
+        charactersJsonRef.current = mappedCharsJson;
+      }
     } catch (error) {
       console.error('Error al cargar campaña:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!session?.playerIds || !accessToken) return;
+    (async () => {
+      for (const pid of session.playerIds) {
+        if (userNameMap[pid] || userNameCache.current[pid]) continue;
+        try {
+          const profile = await getUserById(pid, accessToken);
+          const name = profile?.username || profile?.displayName;
+          if (name) {
+            userNameCache.current[pid] = name;
+            setUserNameMap(prev => ({ ...prev, [pid]: name! }));
+          }
+        } catch (e) {
+        }
+      }
+    })();
+  }, [session?.playerIds, accessToken]);
 
   const handleCopyInviteLink = () => {
     navigator.clipboard.writeText(inviteLink);
@@ -180,6 +277,35 @@ export default function CampaignDetailsPage() {
 
   const handleLaunchVTT = () => {
     router.push(`/my-campaigns/play/${campaignId}`);
+  };
+
+  const handleStartGame = async () => {
+    if (!accessToken || !session) return;
+    
+    try {
+      setStartingGame(true);
+      const startGameMessage = JSON.stringify({
+        type: 'GAME_START',
+        sessionId: campaignId,
+        timestamp: new Date().toISOString()
+      });
+      
+      sendMessageToGameSession(startGameMessage);
+      const response = await apiFetch(`/api/game-sessions/${campaignId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: 'active' }),
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      
+      if (response.ok) {
+        router.push(`/my-campaigns/play/${campaignId}`);
+      }
+    } catch (error) {
+      console.error('Error al iniciar la partida:', error);
+      alert('Error al iniciar la partida. Intenta de nuevo.');
+    } finally {
+      setStartingGame(false);
+    }
   };
 
   if (loading) {
@@ -229,15 +355,20 @@ export default function CampaignDetailsPage() {
 
         {/* Título y acción principal */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 border-b-2 border-[#0b87da] pb-4">
-          <h1 className="font-display text-4xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-0">{campaign?.name || 'Campaign'}</h1>
-          <div className="flex gap-2">
+          <div className="flex-1">
+            <h1 className="font-display text-4xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-0">{campaign?.name || 'Campaign'}</h1>
+          </div>
+          <div className="flex gap-2 items-center">
             {isDM && (
-              <button 
-                className="bg-[#0b87da] hover:bg-[#0866a8] text-white text-sm font-bold py-2 px-4 rounded shadow flex items-center gap-2 uppercase transition"
-                onClick={handleLaunchVTT}
-              >
-                <MdMenuBook className="text-lg" /> Launch VTT
-              </button>
+              <div className="flex items-center gap-4">
+                <button 
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-bold py-2 px-4 rounded shadow flex items-center gap-2 uppercase transition"
+                  onClick={handleStartGame}
+                  disabled={startingGame || (session?.playerIds?.length || 0) === 0}
+                >
+                  <MdMenuBook className="text-lg" /> {startingGame ? 'Iniciando...' : 'Iniciar Partida'}
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -274,6 +405,35 @@ export default function CampaignDetailsPage() {
                   >
                     {copiedLink ? 'Copiado!' : 'Copiar enlace'}
                   </button>
+                </div>
+              </div>
+            )}
+            {/* Players count panel (real-time via sockets) */}
+            {session && (
+              <div className="bg-white rounded-lg border border-[#1fadad]/20 shadow-sm p-4 mb-4">
+                <div className="flex items-center justify-between pb-2 border-b border-[#1fadad]/20 mb-3">
+                  <h4 className="text-sm font-bold text-[#2b2218]">Jugadores en sesión</h4>
+                  <span className="text-xs text-[#1fadad] font-bold">{session.playerIds?.length || 0}</span>
+                </div>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {session.playerIds && session.playerIds.length > 0 ? (
+                    session.playerIds.map((playerId: string, index: number) => {
+                      const displayName = userNameMap[playerId] || userNameCache.current[playerId] || (playerId.substring(0, 12) + (playerId.length > 12 ? '...' : ''));
+                      return (
+                      <div key={index} className="flex items-center gap-2 text-xs p-2 bg-[#f6f8f8] rounded">
+                        <div className="w-6 h-6 rounded-full bg-[#1fadad]/30 flex items-center justify-center text-[#1fadad] font-bold">
+                          {displayName.substring(0, 1).toUpperCase()}
+                        </div>
+                        <span className="font-semibold text-[#2b2218]">{displayName}</span>
+                        {playerId === session.dungeonMasterId && (
+                          <span className="ml-auto bg-yellow-100 text-yellow-800 text-[10px] font-bold px-1.5 py-0.5 rounded">DM</span>
+                        )}
+                      </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-[#2b2218]/40 text-xs">No hay jugadores</p>
+                  )}
                 </div>
               </div>
             )}

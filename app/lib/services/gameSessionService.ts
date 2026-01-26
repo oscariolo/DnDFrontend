@@ -116,7 +116,11 @@ export async function addCharacterToSession(
     throw new Error('Error al agregar personaje a la sesión');
   }
 
-  return response.json();
+  const jsonResponse = await response.json().catch(() => null);
+  if (!jsonResponse) {
+    throw new Error('Empty response from server when adding character');
+  }
+  return (jsonResponse.data || jsonResponse) as CampaignRun;
 }
 
 export async function addPlayerToSession(
@@ -124,23 +128,28 @@ export async function addPlayerToSession(
   playerId: string,
   token: string
 ): Promise<CampaignRun> {
-  const response = await fetch(`${GAME_SESSION_BASE_API}/${sessionId}/players`, {
+  const res = await apiFetch(`${GAME_SESSION_BASE_API}/${sessionId}/players`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      gameId: sessionId,
-      playerId,
-    }),
+    body: JSON.stringify({ playerId }),
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 
-  if (!response.ok) {
-    throw new Error('Error al agregar jugador a la sesión');
+  if (!res.ok) {
+    let msg = `Error al agregar jugador a la sesión (${res.status})`;
+    try {
+      const err = await res.json();
+      if (err && err.message) msg = `${msg}: ${err.message}`;
+    } catch (e) {
+      try {
+        const text = await res.text();
+        if (text) msg = `${msg}: ${text}`;
+      } catch {}
+    }
+    throw new Error(msg);
   }
 
-  return response.json();
+  const json = await res.json();
+  return json.data || json;
 
 }
 export function generateInviteToken(sessionId: string): string {
@@ -164,8 +173,10 @@ export function decodeInviteToken(token: string): { sessionId: string; timestamp
 }
 export function getInviteLink(sessionId: string): string {
   const token = generateInviteToken(sessionId);
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-  return `${baseUrl}/my-campaigns/invite/${token}`;
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const baseUrl = envUrl || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+  const normalized = baseUrl.replace(/\/$/, '');
+  return `${normalized}/my-campaigns/invite/${token}`;
 }
 export async function joinGameSession(
   token: string,
@@ -177,6 +188,18 @@ export async function joinGameSession(
   if (!decoded) {
     throw new Error('Invalid invite token');
   }
-  await addPlayerToSession(decoded.sessionId, userId, authToken);
-  return addCharacterToSession(decoded.sessionId, characterId, userId, authToken);
+  try {
+    await addPlayerToSession(decoded.sessionId, userId, authToken);
+  } catch (e) {
+    console.error('addPlayerToSession failed:', e);
+    throw e;
+  }
+
+  try {
+    const added = await addCharacterToSession(decoded.sessionId, characterId, userId, authToken);
+    return added as CampaignRun;
+  } catch (e) {
+    console.error('addCharacterToSession failed:', e);
+    throw e;
+  }
 }

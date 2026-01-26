@@ -2,7 +2,7 @@
 
 import ConfirmDialog from "@/app/shared/components/ConfirmDialog";
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, usePathname, useSearchParams } from "next/navigation";
 import { MdPerson2, MdAdd, MdShield, MdCheck } from "react-icons/md";
 import { useAuth } from "@/app/lib/context/AuthContext";
 import { decodeInviteToken, getGameSession, joinGameSession } from "@/app/lib/services/gameSessionService";
@@ -51,14 +51,19 @@ export default function CampaignInvitePage() {
 
   const token = params.token as string;
 
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   useEffect(() => {
     if (!isAuthenticated || !user || !accessToken) {
-      router.push('/auth');
+      const query = searchParams?.toString() ? `?${searchParams.toString()}` : '';
+      const returnTo = `${pathname}${query}`;
+      router.push(`/auth?returnTo=${encodeURIComponent(returnTo)}`);
       return;
     }
-    
+
     loadCampaignAndCharacters();
-  }, [isAuthenticated, user, accessToken, token]);
+  }, [isAuthenticated, user, accessToken, token, pathname, searchParams]);
 
   const loadCampaignAndCharacters = async () => {
     if (!user || !accessToken) return;
@@ -66,47 +71,39 @@ export default function CampaignInvitePage() {
     try {
       setLoading(true);
       setError(null);
-      
-      // Decode invite token
       const decoded = decodeInviteToken(token);
       if (!decoded) {
         setError('Token de invitación inválido');
         return;
       }
-
-      // Fetch campaign session
       const session = await getGameSession(decoded.sessionId, accessToken);
-      
-      // TODO: Fetch base campaign details from backend
-      // For now, using mock data
       setCampaign({
         id: session._id,
-        name: 'Campaign Name', // Should fetch from baseCampaignId
+        name: 'Campaign Name',
         description: 'Campaign description',
         dm: 'Dungeon Master',
         players: `${session.playerIds?.length || 0} / 6 Plazas`,
       });
-
-      // Fetch user's characters
       const userChars = await getAllCharactersByUserId(user.id, accessToken);
-      
-      // Map to frontend format
-      const mappedChars = userChars.map((char: any) => ({
-        id: char.id,
-        name: char.characterName || 'Unnamed',
-        race: char.characterRace || 'Unknown',
-        class: char.characterClass || 'Unknown',
-        level: char.level || 1,
-        avatar: char.avatar || '/images/Avatar1.png',
-        attributes: [
-          { label: 'ROB', value: char.robustez || 10 },
-          { label: 'INT', value: char.inteligence || 10 },
-          { label: 'FUE', value: char.strength || 10 },
-          { label: 'DES', value: char.dexterity || 10 },
-          { label: 'CAR', value: char.charisma || 10 },
-          { label: 'SAB', value: char.wisdom || 10 },
-        ],
-      }));
+      const mappedChars = (userChars || []).map((char: any) => {
+        const attrs = char.attributes || {};
+        return {
+          id: char.id || char._id || '',
+          name: char.name || 'Unnamed',
+          race: char.race || 'Unknown',
+          class: char.characterClass || char.characterClass || 'Unknown',
+          level: char.level || 1,
+          avatar: char.avatar || '/images/Avatar1.png',
+          attributes: [
+            { label: 'ROB', value: attrs.robustez ?? attrs.ROB ?? 10 },
+            { label: 'INT', value: attrs.inteligence ?? attrs.INT ?? 10 },
+            { label: 'FUE', value: attrs.strength ?? attrs.FUE ?? 10 },
+            { label: 'DES', value: attrs.dexterity ?? attrs.DES ?? 10 },
+            { label: 'CAR', value: attrs.charisma ?? attrs.CAR ?? 10 },
+            { label: 'SAB', value: attrs.wisdom ?? attrs.SAB ?? 10 },
+          ],
+        };
+      });
       
       setCharacters(mappedChars);
     } catch (err) {
@@ -130,9 +127,9 @@ export default function CampaignInvitePage() {
       if (decoded) {
         router.push(`/my-campaigns/wait/${decoded.sessionId}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al unirse a la sesión:', error);
-      alert('Error al unirse a la sesión. Intenta de nuevo.');
+      alert(error?.message || 'Error al unirse a la sesión. Intenta de nuevo.');
     } finally {
       setJoining(false);
     }
